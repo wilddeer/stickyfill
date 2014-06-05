@@ -1,10 +1,30 @@
 (function(doc, win) {
     
     var watchArray = [],
-        scrollTop,
-        recalcAllowed = true,
+        scroll = {
+            top: 0,
+            left: 0
+        },
+        //recalcAllowed = true,
         initialized = false,
-        docElem = doc.documentElement;
+        docElem = doc.documentElement,
+        noop = function() {};
+
+    //test for native support
+    var prefixes = ['', '-webkit-', '-moz-', '-ms-'],
+        block = document.createElement('div');
+
+    for (var i = prefixes.length - 1; i >= 0; i--) {
+        try {
+            block.style.position = prefixes[i] + 'sticky';
+        }
+        catch(e) {}
+        if (block.style.position != '') {
+            win.Stickyfill = noop;
+            return;
+        }
+    }
+
 
     function addEvent(el, event, func, bool) {
         if (!event) return;
@@ -13,27 +33,32 @@
     }
 
     function updateScrollPos() {
-        scrollTop = docElem.scrollTop || document.body.scrollTop;
-
-        //window.requestAnimationFrame(updateScrollPos);
-
-        if (recalcAllowed) {
-            recalcAllowed = false;
-            //recalcPos();
-
-            window.requestAnimationFrame? requestAnimationFrame(recalcPos): setTimeout(recalcPos, 15);
+        var queuReinit,
+            currentScroll = {
+            top: docElem.scrollTop || document.body.scrollTop,
+            left: docElem.scrollLeft || document.body.scrollLeft
         }
+
+        if (currentScroll.left != scroll.left) {
+            scroll = currentScroll;
+            reinit();
+            return;
+        }
+
+        scroll = currentScroll;
+
+        recalcPos();
     }
 
     function recalcPos() {
         for (var i = watchArray.length - 1; i >= 0; i--) {
-            var currentMode = (scrollTop <= watchArray[i].top? 0: scrollTop >= watchArray[i].bottom? 2: 1);
+            var currentMode = (scroll.top <= watchArray[i].limit.start || isNaN(parseFloat(watchArray[i].css.top))? 0: scroll.top >= watchArray[i].limit.end? 2: 1);
 
             if (watchArray[i].mode != currentMode) {
                 switchElementMode(watchArray[i], currentMode);
             }
 
-            recalcAllowed = true;
+            //recalcAllowed = true;
         };
     }
 
@@ -44,7 +69,10 @@
                     el.clone.parentNode.removeChild(el.clone);
                     el.clone = undefined;
                 }
-                el.node.style.position = el.node.style.top = el.node.style.width = '';
+                el.node.style.position = el.node.style.width = '';
+                el.node.style.top = el.css.top;
+                el.node.style.bottom = el.css.bottom;
+                el.node.style.left = el.css.left;
                 break;
             case 1:
                 if (!el.clone) {
@@ -52,8 +80,9 @@
                     el.node.parentNode.insertBefore(el.clone, el.node);
                 }
                 el.node.style.position = 'fixed';
-                el.node.style.top = 0;
-                el.node.style.bottom = '';
+                el.node.style.left = el.box.left + 'px';
+                el.node.style.top = el.css.top;
+                el.node.style.bottom = 'auto';
                 el.node.style.width = el.width + 'px';
                 break;
             case 2:
@@ -62,7 +91,8 @@
                     el.node.parentNode.insertBefore(el.clone, el.node);
                 }
                 el.node.style.position = 'absolute';
-                el.node.style.top = '';
+                el.node.style.left = 'auto';
+                el.node.style.top = 'auto';
                 el.node.style.bottom = 0;
                 el.node.style.width = el.width + 'px';
                 break;
@@ -76,17 +106,36 @@
 
         var parent = node.parentNode,
             nodeOffset = getElementOffset(node),
-            parentOffset = getElementOffset(parent);
+            parentOffset = getElementOffset(parent),
+            elTop = parseFloat(getElementStyleProp(node, 'top')) || 0;
 
         return {
             node: node,
-            left: nodeOffset.left,
-            top: nodeOffset.top,
-            bottom: parentOffset.top + parent.clientHeight - node.offsetHeight,
+            leftLimit: nodeOffset.doc.left,
+            box: nodeOffset.win,
+            limit: {
+                start: nodeOffset.doc.top - elTop,
+                end: parentOffset.doc.top + parent.clientHeight - node.offsetHeight - elTop
+            },
+            css: {
+                top: getElementStyleProp(node, 'top'),
+                bottom: getElementStyleProp(node, 'bottom'),
+                left: getElementStyleProp(node, 'left'),
+                right: getElementStyleProp(node, 'right')
+            },
             width: node.offsetWidth,
             mode: 0,
             clone: undefined
         }
+    }
+
+    function getElementStyleProp(node, prop) {
+        var result;
+        win.opera && (node.style.position = 'absolute');
+        result = window.getComputedStyle? getComputedStyle(node)[prop]: node.currentStyle[prop];
+        win.opera && (node.style.position = '');
+        
+        return result;
     }
 
     function getElementOffset(node) {
@@ -101,8 +150,11 @@
             box = node.getBoundingClientRect();
 
             return {
-                left: box.left + scroll.left - client.left,
-                top: box.top + scroll.top - client.top
+                doc: {
+                    left: box.left + scroll.left - client.left,
+                    top: box.top + scroll.top - client.top
+                },
+                win: box
             };
     }
 
@@ -140,6 +192,7 @@
         if (!initialized) init();
 
         return {
+            elements: watchArray,
             reinit: reinit
         }
     }
