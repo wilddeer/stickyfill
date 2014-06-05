@@ -36,9 +36,21 @@
 			background: rgba(0,0,0,0.8);
 			padding: 2em;
 			color: white;
-			-webkit-box-sizing: border-box;
-			-moz-box-sizing: border-box;
-			box-sizing: border-box;
+		}
+
+		.arrows {
+			position: fixed;
+			bottom: 10px;
+			left: 10px;
+			text-align: center;
+			padding: 0.5em;
+			background: #69A9D3;
+			border-radius: 0.5em;
+			z-index: 10;
+		}
+
+		.arrows button {
+			vertical-align: middle;
 		}
 	</style>
 
@@ -48,6 +60,17 @@
 </head>
 
 <body>
+	<div class="arrows">
+		<div>
+			<button class="js-top">&#8593;</button>
+		</div>
+		<div>
+			<button class="js-left">&larr;</button>
+			<button class="js-bottom">&#8595;</button>
+			<button class="js-right">&rarr;</button>
+		</div>
+	</div>
+
 	<div style="width: 150%;">
 		1
 	</div>
@@ -247,6 +270,22 @@
 
 		$('.sticky').each(function() {
 			sticky = Stickyfill(this);
+		});
+
+		$('.js-top').click(function() {
+			window.scrollTo(document.body.scrollLeft, document.body.scrollTop-1);
+		});
+
+		$('.js-left').click(function() {
+			window.scrollTo(document.body.scrollLeft-1, document.body.scrollTop);
+		});
+
+		$('.js-right').click(function() {
+			window.scrollTo(document.body.scrollLeft+1, document.body.scrollTop);
+		});
+
+		$('.js-bottom').click(function() {
+			window.scrollTo(document.body.scrollLeft, document.body.scrollTop+1);
 		});
 	</script>
 </body>
