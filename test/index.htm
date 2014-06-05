@@ -275,19 +275,19 @@
             sticky = Stickyfill(this);
         });
 
-        $('.js-top').on('mousedow', function() {
+        $('.js-top').on('mousedown', function() {
             window.scrollTo(document.body.scrollLeft, document.body.scrollTop-1);
         });
 
-        $('.js-left').on('mousedow', function() {
+        $('.js-left').on('mousedown', function() {
             window.scrollTo(document.body.scrollLeft-1, document.body.scrollTop);
         });
 
-        $('.js-right').on('mousedow', function() {
+        $('.js-right').on('mousedown', function() {
             window.scrollTo(document.body.scrollLeft+1, document.body.scrollTop);
         });
 
-        $('.js-bottom').on('mousedow', function() {
+        $('.js-bottom').on('mousedown', function() {
             window.scrollTo(document.body.scrollLeft, document.body.scrollTop+1);
         });
     </script>
