@@ -5,10 +5,15 @@
             top: 0,
             left: 0
         },
-        //recalcAllowed = true,
         initialized = false,
         docElem = doc.documentElement,
         noop = function() {};
+
+    //test getComputedStyle
+    if (!window.getComputedStyle) {
+        win.Stickyfill = noop;
+        return;
+    }
 
     //test for native support
     var prefixes = ['', '-webkit-', '-moz-', '-ms-'],
@@ -25,13 +30,6 @@
         }
     }
 
-
-    function addEvent(el, event, func, bool) {
-        if (!event) return;
-
-        el.addEventListener? el.addEventListener(event, func, !!bool): el.attachEvent('on'+event, func);
-    }
-
     function updateScrollPos() {
         var queuReinit,
             currentScroll = {
@@ -42,23 +40,21 @@
         if (currentScroll.left != scroll.left) {
             scroll = currentScroll;
             reinit();
-            return;
         }
-
-        scroll = currentScroll;
-
-        recalcPos();
+        else {
+            scroll = currentScroll;
+            //window.requestAnimationFrmae? requestAnimationFrmae(recalcPos): recalcPos();
+            recalcPos();
+        }
     }
 
     function recalcPos() {
         for (var i = watchArray.length - 1; i >= 0; i--) {
-            var currentMode = (scroll.top <= watchArray[i].limit.start || isNaN(parseFloat(watchArray[i].css.top))? 0: scroll.top >= watchArray[i].limit.end? 2: 1);
+            var currentMode = (scroll.top <= watchArray[i].limit.start || isNaN(parseFloat(watchArray[i].computed.top))? 0: scroll.top >= watchArray[i].limit.end? 2: 1);
 
             if (watchArray[i].mode != currentMode) {
                 switchElementMode(watchArray[i], currentMode);
             }
-
-            //recalcAllowed = true;
         };
     }
 
@@ -69,25 +65,29 @@
                     el.clone.parentNode.removeChild(el.clone);
                     el.clone = undefined;
                 }
-                el.node.style.position = el.node.style.width = '';
+                el.node.style.position = '';
+                el.node.style.width = el.css.width;
                 el.node.style.top = el.css.top;
                 el.node.style.bottom = el.css.bottom;
                 el.node.style.left = el.css.left;
+                el.node.style.marginTop = el.css.marginTop;
+                el.node.style.marginBottom = el.css.marginBottom;
                 break;
             case 1:
                 if (!el.clone) {
-                    el.clone = clone(el.node);
+                    el.clone = clone(el);
                     el.node.parentNode.insertBefore(el.clone, el.node);
                 }
                 el.node.style.position = 'fixed';
                 el.node.style.left = el.box.left + 'px';
-                el.node.style.top = el.css.top;
+                el.node.style.top = el.computed.top;
                 el.node.style.bottom = 'auto';
                 el.node.style.width = el.width + 'px';
+                el.node.style.marginTop = 0;
                 break;
             case 2:
                 if (!el.clone) {
-                    el.clone = clone(el.node);
+                    el.clone = clone(el);
                     el.node.parentNode.insertBefore(el.clone, el.node);
                 }
                 el.node.style.position = 'absolute';
@@ -95,6 +95,7 @@
                 el.node.style.top = 'auto';
                 el.node.style.bottom = 0;
                 el.node.style.width = el.width + 'px';
+                el.node.style.marginBottom = 0;
                 break;
         }
 
@@ -104,7 +105,7 @@
     function getElementParams(node) {
         if (!node.parentNode) return;
 
-        var parent = node.parentNode,
+        var parent = node.offsetParent,
             nodeOffset = getElementOffset(node),
             parentOffset = getElementOffset(parent),
             elTop = parseFloat(getElementStyleProp(node, 'top')) || 0;
@@ -115,26 +116,37 @@
             box: nodeOffset.win,
             limit: {
                 start: nodeOffset.doc.top - elTop,
-                end: parentOffset.doc.top + parent.clientHeight - node.offsetHeight - elTop
+                end: parentOffset.doc.top + parent.clientHeight - node.offsetHeight - elTop + 1
             },
             css: {
+                top: node.style.top,
+                bottom: node.style.bottom,
+                left: node.style.left,
+                right: node.style.right,
+                width: node.style.width,
+                marginTop: node.style.marginTop,
+                marginBottom: node.style.marginBottom
+            },
+            computed: {
                 top: getElementStyleProp(node, 'top'),
-                bottom: getElementStyleProp(node, 'bottom'),
-                left: getElementStyleProp(node, 'left'),
-                right: getElementStyleProp(node, 'right')
+                marginTop: getElementStyleProp(node, 'marginTop'),
+                marginBottom: getElementStyleProp(node, 'marginBottom'),
             },
             width: node.offsetWidth,
+            height: node.offsetHeight,
             mode: 0,
             clone: undefined
         }
     }
 
     function getElementStyleProp(node, prop) {
-        var result;
-        win.opera && (node.style.position = 'absolute');
-        result = window.getComputedStyle? getComputedStyle(node)[prop]: node.currentStyle[prop];
-        win.opera && (node.style.position = '');
-        
+        var absProp = ['top', 'bottom', 'left', 'right'].indexOf(prop) !== -1,
+            result;
+
+        win.opera && absProp && (node.style.position = 'absolute');
+        result = getComputedStyle(node)[prop];
+        win.opera && absProp && (node.style.position = '');
+
         return result;
     }
 
@@ -158,10 +170,12 @@
             };
     }
 
-    function clone(node) {
+    function clone(el) {
         var clone = document.createElement('div');
 
-        clone.style.height = node.offsetHeight + 'px';
+        clone.style.height = el.height + 'px';
+        clone.style.marginTop = el.computed.marginTop;
+        clone.style.marginBottom = el.computed.marginBottom;
 
         return clone;
     }
@@ -180,11 +194,11 @@
 
     function init() {
         updateScrollPos();
-        addEvent(win, 'scroll', updateScrollPos);
+        win.addEventListener('scroll', updateScrollPos);
 
         //watch for width changes
-        addEvent(win, 'resize', reinit);
-        addEvent(win, 'orientationchange', reinit);
+        win.addEventListener('resize', reinit);
+        win.addEventListener('orientationchange', reinit);
     }
 
     win.Stickyfill = function(node) {
