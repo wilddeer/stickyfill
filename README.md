@@ -38,12 +38,6 @@ CSS:
     position: -webkit-sticky;
     position: sticky;
     top: 0;
-    /* border-box required for now :-( 
-     * will fix this later
-     */
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
 }
 ```
 
