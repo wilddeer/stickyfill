@@ -13,7 +13,8 @@
         h1,
         h2,
         h3,
-        h4 {
+        h4,
+        th {
             font-weight: normal;
         }
 
@@ -58,6 +59,10 @@
 
         .arrows button {
             vertical-align: middle;
+        }
+
+        table {
+            position: relative;
         }
     </style>
 
@@ -436,19 +441,19 @@
         });
 
         $('.js-top').on('mousedown', function() {
-            window.scrollTo(document.body.scrollLeft, document.body.scrollTop-1);
+            window.scrollTo((document.documentElement.scrollLeft || document.body.scrollLeft), (document.documentElement.scrollTop || document.body.scrollTop)-1);
         });
 
         $('.js-left').on('mousedown', function() {
-            window.scrollTo(document.body.scrollLeft-1, document.body.scrollTop);
+            window.scrollTo((document.documentElement.scrollLeft || document.body.scrollLeft)-1, (document.documentElement.scrollTop || document.body.scrollTop));
         });
 
         $('.js-right').on('mousedown', function() {
-            window.scrollTo(document.body.scrollLeft+1, document.body.scrollTop);
+            window.scrollTo((document.documentElement.scrollLeft || document.body.scrollLeft)+1, (document.documentElement.scrollTop || document.body.scrollTop));
         });
 
         $('.js-bottom').on('mousedown', function() {
-            window.scrollTo(document.body.scrollLeft, document.body.scrollTop+1);
+            window.scrollTo((document.documentElement.scrollLeft || document.body.scrollLeft), (document.documentElement.scrollTop || document.body.scrollTop)+1);
         });
     </script>
 </body>

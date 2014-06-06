@@ -72,6 +72,7 @@
                 el.node.style.bottom = el.css.bottom;
                 el.node.style.left = el.css.left;
                 el.node.style.marginTop = el.css.marginTop;
+                //el.node.style.marginBottom = el.css.marginBottom;
                 break;
             case 1:
                 if (!el.clone) {
@@ -97,6 +98,7 @@
                 el.node.style.top = 'auto';
                 el.node.style.bottom = 0;
                 el.node.style.width = el.width + 'px';
+                //el.node.style.marginBottom = 0;
                 break;
         }
 
@@ -122,11 +124,7 @@
                 marginTop: node.style.marginTop,
                 marginBottom: node.style.marginBottom
             },
-            computed: {
-                top: getElementStyleProp(node, 'top'),
-                marginTop: getElementStyleProp(node, 'marginTop'),
-                marginBottom: getElementStyleProp(node, 'marginBottom'),
-            },
+            computed: getElementStyleProps(node, 'top marginTop marginBottom'),
             width: node.offsetWidth,
             height: node.offsetHeight,
             mode: 0,
@@ -134,25 +132,30 @@
         };
 
         var numericTop = parseFloat(el.computed.top) || 0,
-            numericMarginBottom = parseFloat(el.computed.marginBottom) || 0;
+            numericMarginBottom = parseFloat(el.computed.marginBottom) || 0,
+            numericParentBorderBottomWidth = parseFloat(getElementStyleProps(parent, 'borderBottomWidth')) || 0;
 
         el.limit = {
             start: nodeOffset.doc.top - numericTop,
-            end: nodeOffset.doc.top + parent.clientHeight - node.offsetHeight - numericTop - numericMarginBottom
+            end: parentOffset.doc.top + parent.offsetHeight - numericParentBorderBottomWidth - node.offsetHeight - numericTop - numericMarginBottom
         }
 
         return el;
     }
 
-    function getElementStyleProp(node, prop) {
-        var absProp = ['top', 'bottom', 'left', 'right'].indexOf(prop) !== -1,
-            result;
+    function getElementStyleProps(node, props) {
+        var absProps = (!!window.opera || node.tagName == 'TH' || node.tagName == 'TD'),
+            result = {};
 
-        win.opera && absProp && (node.style.position = 'absolute');
-        result = getComputedStyle(node)[prop];
-        win.opera && absProp && (node.style.position = '');
+        props = props.split(' ');
 
-        return result;
+        absProps && (node.style.position = 'absolute');
+        for (var i = props.length - 1; i >= 0; i--) {
+            result[props[i]] = getComputedStyle(node)[props[i]];
+        }
+        absProps && (node.style.position = '');
+
+        return props.length > 1? result: result[props[0]];
     }
 
     function getElementOffset(node) {
@@ -215,7 +218,12 @@
 
         return {
             elements: watchArray,
-            reinit: reinit
+            reinit: reinit,
+            removeListeners: function() {
+                win.removeEventListener('scroll', updateScrollPos);
+                win.removeEventListener('resize', reinit);
+                win.removeEventListener('orientationchange', reinit);
+            }
         }
     }
 
