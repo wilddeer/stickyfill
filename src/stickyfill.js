@@ -94,8 +94,7 @@
                 el.node.style.left = el.box.left + 'px';
                 el.node.style.top = el.css.top;
                 el.node.style.bottom = 'auto';
-                el.node.style.width = el.width - el.numeric.paddingLeft -
-                    el.numeric.paddingRight - el.numeric.borderLeftWidth - el.numeric.borderRightWidth + 'px';
+                el.node.style.width = el.computed.width;
                 el.node.style.marginTop = 0;
                 break;
 
@@ -107,8 +106,7 @@
                 el.node.style.left = 'auto';
                 el.node.style.top = 'auto';
                 el.node.style.bottom = 0;
-                el.node.style.width = el.width - el.numeric.paddingLeft -
-                    el.numeric.paddingRight - el.numeric.borderLeftWidth - el.numeric.borderRightWidth + 'px';
+                el.node.style.width = el.computed.width;
                 if (el.cell) el.parent.node.style.position = 'relative';
                 break;
         }
@@ -148,6 +146,7 @@
         if (win.opera || isCell) node.style.position = 'absolute';
 
         var computed = {
+                width: computedStyle.width,
                 top: computedStyle.top,
                 marginTop: computedStyle.marginTop,
                 marginBottom: computedStyle.marginBottom
