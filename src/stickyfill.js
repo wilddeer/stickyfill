@@ -74,9 +74,9 @@
                 el.node.style.bottom = el.css.bottom;
                 el.node.style.left = el.css.left;
                 el.node.style.marginTop = el.css.marginTop;
-                el.node.style.WebkitBoxSizing = el.css.WebkitBoxSizing;
+                /*el.node.style.WebkitBoxSizing = el.css.WebkitBoxSizing;
                 el.node.style.MozBoxSizing = el.css.MozBoxSizing;
-                el.node.style.boxSizing = el.css.boxSizing;
+                el.node.style.boxSizing = el.css.boxSizing;*/
                 el.parent.node.style.position = el.parent.css.position;
                 break;
 
@@ -90,8 +90,8 @@
                 el.node.style.bottom = 'auto';
                 el.node.style.width = el.width + 'px';
                 el.node.style.marginTop = 0;
-                el.node.style.boxSizing = el.node.style.WebkitBoxSizing =
-                    el.node.style.MozBoxSizing = 'border-box';
+                /*el.node.style.boxSizing = el.node.style.WebkitBoxSizing =
+                    el.node.style.MozBoxSizing = 'border-box';*/
                 break;
 
             case 2:
@@ -103,8 +103,8 @@
                 el.node.style.top = 'auto';
                 el.node.style.bottom = 0;
                 el.node.style.width = el.width + 'px';
-                el.node.style.boxSizing = el.node.style.WebkitBoxSizing =
-                    el.node.style.MozBoxSizing = 'border-box';
+                /*el.node.style.boxSizing = el.node.style.WebkitBoxSizing =
+                    el.node.style.MozBoxSizing = 'border-box';*/
                 if (el.cell) el.parent.node.style.position = 'relative';
                 break;
         }
@@ -153,10 +153,10 @@
                 right: node.style.right,
                 width: node.style.width,
                 marginTop: node.style.marginTop,
-                marginBottom: node.style.marginBottom,
+                marginBottom: node.style.marginBottom/*,
                 boxSizing: node.style.boxSizing,
                 WebkitBoxSizing: node.style.WebkitBoxSizing,
-                MozBoxSizing: node.style.MozBoxSizing
+                MozBoxSizing: node.style.MozBoxSizing*/
             },
             cell: getComputedStyle(node).display == 'table-cell',
             computed: getElementStyleProps(node, 'top marginTop marginBottom'),
