@@ -62,6 +62,7 @@
         switch (mode) {
             case 0:
                 if (el.clone) {
+                    el.clone.parentNode.insertBefore(el.node, el.clone);
                     el.clone.parentNode.removeChild(el.clone);
                     el.clone = undefined;
                 }
@@ -71,12 +72,12 @@
                 el.node.style.bottom = el.css.bottom;
                 el.node.style.left = el.css.left;
                 el.node.style.marginTop = el.css.marginTop;
-                el.node.style.marginBottom = el.css.marginBottom;
                 break;
             case 1:
                 if (!el.clone) {
                     el.clone = clone(el);
                     el.node.parentNode.insertBefore(el.clone, el.node);
+                    el.clone.appendChild(el.node);
                 }
                 el.node.style.position = 'fixed';
                 el.node.style.left = el.box.left + 'px';
@@ -89,13 +90,13 @@
                 if (!el.clone) {
                     el.clone = clone(el);
                     el.node.parentNode.insertBefore(el.clone, el.node);
+                    el.clone.appendChild(el.node);
                 }
                 el.node.style.position = 'absolute';
                 el.node.style.left = 'auto';
                 el.node.style.top = 'auto';
                 el.node.style.bottom = 0;
                 el.node.style.width = el.width + 'px';
-                el.node.style.marginBottom = 0;
                 break;
         }
 
@@ -107,17 +108,11 @@
 
         var parent = node.offsetParent,
             nodeOffset = getElementOffset(node),
-            parentOffset = getElementOffset(parent),
-            elTop = parseFloat(getElementStyleProp(node, 'top')) || 0;
+            parentOffset = getElementOffset(parent);
 
-        return {
+        var el = {
             node: node,
-            leftLimit: nodeOffset.doc.left,
             box: nodeOffset.win,
-            limit: {
-                start: nodeOffset.doc.top - elTop,
-                end: parentOffset.doc.top + parent.clientHeight - node.offsetHeight - elTop + 1
-            },
             css: {
                 top: node.style.top,
                 bottom: node.style.bottom,
@@ -136,7 +131,17 @@
             height: node.offsetHeight,
             mode: 0,
             clone: undefined
+        };
+
+        var numericTop = parseFloat(el.computed.top) || 0,
+            numericMarginBottom = parseFloat(el.computed.marginBottom) || 0;
+
+        el.limit = {
+            start: nodeOffset.doc.top - numericTop,
+            end: nodeOffset.doc.top + parent.clientHeight - node.offsetHeight - numericTop - numericMarginBottom
         }
+
+        return el;
     }
 
     function getElementStyleProp(node, prop) {
@@ -171,11 +176,14 @@
     }
 
     function clone(el) {
-        var clone = document.createElement('div');
+        var clone = document.createElement(el.node.tagName);
 
         clone.style.height = el.height + 'px';
+        clone.style.width = el.width + 'px';
         clone.style.marginTop = el.computed.marginTop;
         clone.style.marginBottom = el.computed.marginBottom;
+        clone.style.paddingTop = clone.style.paddingRight =
+            clone.style.paddingBottom = clone.style.paddingLeft = 0;
 
         return clone;
     }
