@@ -43,28 +43,29 @@
         }
         else {
             scroll = currentScroll;
-            //window.requestAnimationFrmae? requestAnimationFrmae(recalcPos): recalcPos();
-            recalcPos();
+            recalcAllPos();
         }
     }
 
-    function recalcPos() {
+    function recalcAllPos() {
         for (var i = watchArray.length - 1; i >= 0; i--) {
-            var currentMode = (scroll.top <= watchArray[i].limit.start || isNaN(parseFloat(watchArray[i].computed.top))? 0: scroll.top >= watchArray[i].limit.end? 2: 1);
+            recalcElementPos(watchArray[i]);
+        }
+    }
 
-            if (watchArray[i].mode != currentMode) {
-                switchElementMode(watchArray[i], currentMode);
-            }
-        };
+    function recalcElementPos(el) {
+        var currentMode = (scroll.top <= el.limit.start || isNaN(parseFloat(el.computed.top))? 0: scroll.top >= el.limit.end? 2: 1);
+
+        if (el.mode != currentMode) {
+            switchElementMode(el, currentMode);
+        }
     }
 
     function switchElementMode(el, mode) {
         switch (mode) {
             case 0:
                 if (el.clone) {
-                    el.clone.parentNode.insertBefore(el.node, el.clone);
-                    el.clone.parentNode.removeChild(el.clone);
-                    el.clone = undefined;
+                    killClone(el);
                 }
                 el.node.style.position = '';
                 el.node.style.width = el.css.width;
@@ -76,9 +77,7 @@
                 break;
             case 1:
                 if (!el.clone) {
-                    el.clone = clone(el);
-                    el.node.parentNode.insertBefore(el.clone, el.node);
-                    el.clone.appendChild(el.node);
+                    clone(el);
                 }
                 el.node.style.position = 'fixed';
                 el.node.style.left = el.box.left + 'px';
@@ -89,9 +88,7 @@
                 break;
             case 2:
                 if (!el.clone) {
-                    el.clone = clone(el);
-                    el.node.parentNode.insertBefore(el.clone, el.node);
-                    el.clone.appendChild(el.node);
+                    clone(el);
                 }
                 el.node.style.position = 'absolute';
                 el.node.style.left = 'auto';
@@ -103,6 +100,29 @@
         }
 
         el.mode = mode;
+    }
+
+    function clone(el) {
+        var refElement = el.node.nextSibling || el.node;
+
+        el.clone = document.createElement(el.node.tagName);
+
+        el.clone.style.height = el.height + 'px';
+        el.clone.style.width = el.width + 'px';
+        el.clone.style.marginTop = el.computed.marginTop;
+        el.clone.style.marginBottom = el.computed.marginBottom;
+        el.clone.style.paddingTop = el.clone.style.paddingRight =
+            el.clone.style.paddingBottom = el.clone.style.paddingLeft = 0;
+
+        el.node.parentNode.insertBefore(el.clone, refElement);
+
+        if (el.cell) el.clone.appendChild(el.node);
+    }
+
+    function killClone(el) {
+        if (el.cell) el.clone.parentNode.insertBefore(el.node, el.clone);
+        el.clone.parentNode.removeChild(el.clone);
+        el.clone = undefined;
     }
 
     function getElementParams(node) {
@@ -124,6 +144,7 @@
                 marginTop: node.style.marginTop,
                 marginBottom: node.style.marginBottom
             },
+            cell: getComputedStyle(node).display == 'table-cell',
             computed: getElementStyleProps(node, 'top marginTop marginBottom'),
             width: node.offsetWidth,
             height: node.offsetHeight,
@@ -140,11 +161,13 @@
             end: parentOffset.doc.top + parent.offsetHeight - numericParentBorderBottomWidth - node.offsetHeight - numericTop - numericMarginBottom
         }
 
+        el.cell = getComputedStyle(node).display == 'table-cell';
+
         return el;
     }
 
     function getElementStyleProps(node, props) {
-        var absProps = (!!window.opera || node.tagName == 'TH' || node.tagName == 'TD'),
+        var absProps = (!!window.opera || getComputedStyle(node).display == 'table-cell'),
             result = {};
 
         props = props.split(' ');
@@ -178,19 +201,6 @@
             };
     }
 
-    function clone(el) {
-        var clone = document.createElement(el.node.tagName);
-
-        clone.style.height = el.height + 'px';
-        clone.style.width = el.width + 'px';
-        clone.style.marginTop = el.computed.marginTop;
-        clone.style.marginBottom = el.computed.marginBottom;
-        clone.style.paddingTop = clone.style.paddingRight =
-            clone.style.paddingBottom = clone.style.paddingLeft = 0;
-
-        return clone;
-    }
-
     function recalcAllParams() {
         for (var i = watchArray.length - 1; i >= 0; i--) {
             switchElementMode(watchArray[i], 0);
@@ -210,11 +220,18 @@
         //watch for width changes
         win.addEventListener('resize', reinit);
         win.addEventListener('orientationchange', reinit);
+
+        initialized = true;
     }
 
     win.Stickyfill = function(node) {
         watchArray.push(getElementParams(node));
-        if (!initialized) init();
+        if (!initialized) {
+            init();
+        }
+        else {
+            recalcElementPos(watchArray[watchArray.length - 1]);
+        }
 
         return {
             elements: watchArray,
