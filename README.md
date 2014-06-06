@@ -5,14 +5,13 @@ What it does:
 - supports top-positioned stickies,
 - works in IE9+,
 - disables in older IEs and in browsers with native `position: sticky` support.
+- Mimics original `position: sticky` behavior:
 
-Mimics original `position: sticky` behavior:
-
-- lookes for closest relatively positioned parent,
-- behaves nicely with horizontal scrolls,
-- only works on elements with specified `top`,
-- `top` and `margin-bottom` mimic native behavior,
-- works with `TH` and `TD` elements, but not `TR`s.
+	- lookes for closest relatively positioned parent,
+	- behaves nicely with horizontal scrolls,
+	- only works on elements with specified `top`,
+	- `top` and `margin-bottom` mimic native behavior,
+	- works with `TH` and `TD` elements, but not `TR`s.
 
 What it doesn't:
 
@@ -68,12 +67,12 @@ Use `Stickyfill.init()` to enable them again.
 
 ####`Stickyfill.kill()`
 
-Disable stiskies and erase `Stickyfill.elements`.
+Disable stickies and erase `Stickyfill.stickies`.
 
 ####`Stickyfill.init()`
 
-Attach event listeners and start watching for stickies in `Stickyfill.elements`.
+Attach event listeners and start watching for stickies in `Stickyfill.stickies`.
 
 ####`Stickyfill.stickies`
 
-Array of parameter objects for all added stickies.
+Array of parametric objects for all added stickies.
