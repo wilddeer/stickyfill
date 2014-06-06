@@ -1,5 +1,4 @@
 (function(doc, win) {
-    
     var watchArray = [],
         scroll = {
             top: 0,
@@ -11,8 +10,7 @@
 
     //test getComputedStyle
     if (!window.getComputedStyle) {
-        win.Stickyfill = noop;
-        return;
+        seppuku();
     }
 
     //test for native support
@@ -25,21 +23,24 @@
         }
         catch(e) {}
         if (block.style.position != '') {
-            win.Stickyfill = noop;
-            return;
+            seppuku();
         }
     }
 
+    //commit seppuku!
+    function seppuku() {
+        init = add = rebuild = pause = stop = kill = noop;
+    }
+
     function updateScrollPos() {
-        var queuReinit,
-            currentScroll = {
-            top: docElem.scrollTop || document.body.scrollTop,
-            left: docElem.scrollLeft || document.body.scrollLeft
-        }
+        var currentScroll = {
+                top: docElem.scrollTop || document.body.scrollTop,
+                left: docElem.scrollLeft || document.body.scrollLeft
+            }
 
         if (currentScroll.left != scroll.left) {
             scroll = currentScroll;
-            reinit();
+            rebuild();
         }
         else {
             scroll = currentScroll;
@@ -67,14 +68,18 @@
                 if (el.clone) {
                     killClone(el);
                 }
-                el.node.style.position = '';
+                el.node.style.position = el.css.position;
                 el.node.style.width = el.css.width;
                 el.node.style.top = el.css.top;
                 el.node.style.bottom = el.css.bottom;
                 el.node.style.left = el.css.left;
                 el.node.style.marginTop = el.css.marginTop;
-                //el.node.style.marginBottom = el.css.marginBottom;
+                el.node.style.WebkitBoxSizing = el.css.WebkitBoxSizing;
+                el.node.style.MozBoxSizing = el.css.MozBoxSizing;
+                el.node.style.boxSizing = el.css.boxSizing;
+                el.parent.node.style.position = el.parent.css.position;
                 break;
+
             case 1:
                 if (!el.clone) {
                     clone(el);
@@ -85,7 +90,10 @@
                 el.node.style.bottom = 'auto';
                 el.node.style.width = el.width + 'px';
                 el.node.style.marginTop = 0;
+                el.node.style.boxSizing = el.node.style.WebkitBoxSizing =
+                    el.node.style.MozBoxSizing = 'border-box';
                 break;
+
             case 2:
                 if (!el.clone) {
                     clone(el);
@@ -95,7 +103,9 @@
                 el.node.style.top = 'auto';
                 el.node.style.bottom = 0;
                 el.node.style.width = el.width + 'px';
-                //el.node.style.marginBottom = 0;
+                el.node.style.boxSizing = el.node.style.WebkitBoxSizing =
+                    el.node.style.MozBoxSizing = 'border-box';
+                if (el.cell) el.parent.node.style.position = 'relative';
                 break;
         }
 
@@ -136,19 +146,29 @@
             node: node,
             box: nodeOffset.win,
             css: {
+                position: node.style.position,
                 top: node.style.top,
                 bottom: node.style.bottom,
                 left: node.style.left,
                 right: node.style.right,
                 width: node.style.width,
                 marginTop: node.style.marginTop,
-                marginBottom: node.style.marginBottom
+                marginBottom: node.style.marginBottom,
+                boxSizing: node.style.boxSizing,
+                WebkitBoxSizing: node.style.WebkitBoxSizing,
+                MozBoxSizing: node.style.MozBoxSizing
             },
             cell: getComputedStyle(node).display == 'table-cell',
             computed: getElementStyleProps(node, 'top marginTop marginBottom'),
             width: node.offsetWidth,
             height: node.offsetHeight,
             mode: 0,
+            parent: {
+                node: parent,
+                css: {
+                    position: parent.style.position
+                }
+            },
             clone: undefined
         };
 
@@ -205,26 +225,48 @@
         for (var i = watchArray.length - 1; i >= 0; i--) {
             switchElementMode(watchArray[i], 0);
             watchArray[i] = getElementParams(watchArray[i].node);
-        };
-    }
-
-    function reinit() {
-        recalcAllParams();
-        updateScrollPos();
-    }
+        }
+    }  
 
     function init() {
+        if (initialized) return;
+
         updateScrollPos();
         win.addEventListener('scroll', updateScrollPos);
 
         //watch for width changes
-        win.addEventListener('resize', reinit);
-        win.addEventListener('orientationchange', reinit);
+        win.addEventListener('resize', rebuild);
+        win.addEventListener('orientationchange', rebuild);
 
         initialized = true;
     }
 
-    win.Stickyfill = function(node) {
+    function rebuild() {
+        recalcAllParams();
+        updateScrollPos();
+    }
+
+    function pause() {
+        win.removeEventListener('scroll', updateScrollPos);
+        win.removeEventListener('resize', rebuild);
+        win.removeEventListener('orientationchange', rebuild);
+
+        initialized = false;
+    }
+
+    function stop() {
+        pause();
+        for (var i = watchArray.length - 1; i >= 0; i--) {
+            switchElementMode(watchArray[i], 0);
+        }   
+    }
+
+    function kill() {
+        stop();
+        watchArray = [];
+    }
+
+    function add(node) {
         watchArray.push(getElementParams(node));
         if (!initialized) {
             init();
@@ -232,16 +274,16 @@
         else {
             recalcElementPos(watchArray[watchArray.length - 1]);
         }
-
-        return {
-            elements: watchArray,
-            reinit: reinit,
-            removeListeners: function() {
-                win.removeEventListener('scroll', updateScrollPos);
-                win.removeEventListener('resize', reinit);
-                win.removeEventListener('orientationchange', reinit);
-            }
-        }
     }
 
+    //expose Stickyfill
+    win.Stickyfill = {
+        stickies: watchArray,
+        add: add,
+        init: init,
+        rebuild: rebuild,
+        pause: pause,
+        stop: stop,
+        kill: kill
+    };
 })(document, window);
