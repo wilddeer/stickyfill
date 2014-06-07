@@ -103,7 +103,7 @@
                     clone(el);
                 }
                 el.node.style.position = 'absolute';
-                el.node.style.left = 'auto';
+                el.node.style.left = el.offset.left + 'px';
                 el.node.style.top = 'auto';
                 el.node.style.bottom = 0;
                 el.node.style.width = el.computed.width;
@@ -187,6 +187,10 @@
             el = {
                 node: node,
                 box: nodeOffset.win,
+                offset: {
+                    top: node.offsetTop,
+                    left: node.offsetLeft
+                },
                 css: css,
                 cell: isCell,
                 computed: computed,
