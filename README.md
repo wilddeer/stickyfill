@@ -31,7 +31,7 @@ for (var i = stickyElements.length - 1; i >= 0; i--) {
 }
 ```
 
-of JS + jQuery:
+or JS + jQuery:
 
 ```js
 $('.sticky').Stickyfill();
