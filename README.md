@@ -1,5 +1,7 @@
 #`position: sticky` polyfill
 
+The most accurate sticky polyfill out in the wild.
+
 What it does:
 
 - supports top-positioned stickies,

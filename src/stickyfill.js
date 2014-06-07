@@ -5,7 +5,7 @@
             left: 0
         },
         initialized = false,
-        docElem = doc.documentElement,
+        html = doc.documentElement,
         noop = function() {};
 
     //test getComputedStyle
@@ -44,10 +44,16 @@
         return parseFloat(val) || 0;
     }
 
+    function getViewportWidth() {
+        return parseNumeric(getComputedStyle(html).marginLeft) +
+                parseNumeric(getComputedStyle(html).marginRight) +
+                html.offsetWidth;
+    }
+
     function updateScrollPos() {
         var currentScroll = {
-                top: docElem.scrollTop || document.body.scrollTop,
-                left: docElem.scrollLeft || document.body.scrollLeft
+                top: window.pageYOffset,
+                left: window.pageXOffset
             };
 
         if (currentScroll.left != scroll.left) {
@@ -92,9 +98,12 @@
                 }
                 el.node.style.position = 'fixed';
                 el.node.style.left = el.box.left + 'px';
+                el.node.style.right = el.box.right + 'px';
                 el.node.style.top = el.css.top;
                 el.node.style.bottom = 'auto';
-                el.node.style.width = el.computed.width;
+                el.node.style.width = 'auto';
+                el.node.style.marginLeft = 0;
+                el.node.style.marginRight = 0;
                 el.node.style.marginTop = 0;
                 break;
 
@@ -103,10 +112,13 @@
                     clone(el);
                 }
                 el.node.style.position = 'absolute';
-                el.node.style.left = el.offset.left - (win.opera?el.parent.numeric.borderLeftWidth:0) + 'px';
+                el.node.style.left = el.offset.left + 'px';
+                el.node.style.right = el.offset.right + 'px';
                 el.node.style.top = 'auto';
                 el.node.style.bottom = 0;
-                el.node.style.width = el.computed.width;
+                el.node.style.width = 'auto';
+                el.node.style.marginLeft = 0;
+                el.node.style.marginRight = 0;
                 if (el.cell) el.parent.node.style.position = 'relative';
                 break;
         }
@@ -123,7 +135,10 @@
         el.clone.style.width = el.width + 'px';
         el.clone.style.marginTop = el.computed.marginTop;
         el.clone.style.marginBottom = el.computed.marginBottom;
+        el.clone.style.marginLeft = el.computed.marginLeft;
+        el.clone.style.marginRight = el.computed.marginRight;
         el.clone.style.padding = el.clone.style.border = 0;
+        el.clone.style.position = 'static';
 
         el.node.parentNode.insertBefore(el.clone, refElement);
 
@@ -148,7 +163,9 @@
         var computed = {
                 top: computedStyle.top,
                 marginTop: computedStyle.marginTop,
-                marginBottom: computedStyle.marginBottom
+                marginBottom: computedStyle.marginBottom,
+                marginLeft: computedStyle.marginLeft,
+                marginRight: computedStyle.marginRight
             },
             numeric = {
                 top: parseNumeric(computedStyle.top),
@@ -161,15 +178,16 @@
 
         if (win.opera || isCell) node.style.position = cachePosition;
 
-        computed.width = computedStyle.width;
-
         var css = {
                 position: node.style.position,
                 top: node.style.top,
                 bottom: node.style.bottom,
                 left: node.style.left,
+                right: node.style.right,
                 width: node.style.width,
-                marginTop: node.style.marginTop
+                marginTop: node.style.marginTop,
+                marginLeft: node.style.marginLeft,
+                marginRight: node.style.marginRight
             },
             parentNode = node.offsetParent,
             nodeOffset = getElementOffset(node),
@@ -181,24 +199,28 @@
                     position: parentNode.style.position
                 },
                 numeric: {
-                    borderBottomWidth: parseNumeric(getComputedStyle(parentNode).borderBottomWidth),
-                    borderLeftWidth: parseNumeric(getComputedStyle(parentNode).borderLeftWidth)
+                    borderLeftWidth: parseNumeric(getComputedStyle(parentNode).borderLeftWidth),
+                    borderRightWidth: parseNumeric(getComputedStyle(parentNode).borderRightWidth),
+                    borderBottomWidth: parseNumeric(getComputedStyle(parentNode).borderBottomWidth)
                 }
             },
 
             el = {
                 node: node,
-                box: nodeOffset.win,
+                box: {
+                    left: nodeOffset.win.left,
+                    right: getViewportWidth() - nodeOffset.win.right
+                },
                 offset: {
-                    top: node.offsetTop,
-                    left: node.offsetLeft
+                    left: nodeOffset.win.left - parentOffset.win.left - parent.numeric.borderLeftWidth,
+                    right: -nodeOffset.win.right + parentOffset.win.right - parent.numeric.borderRightWidth
                 },
                 css: css,
                 cell: isCell,
                 computed: computed,
                 numeric: numeric,
-                width: node.offsetWidth,
-                height: node.offsetHeight,
+                width: nodeOffset.win.right - nodeOffset.win.left,
+                height: nodeOffset.win.bottom - nodeOffset.win.top,
                 mode: 0,
                 parent: parent,
                 clone: undefined,
@@ -206,27 +228,19 @@
                     start: nodeOffset.doc.top - numeric.top,
                     end: parentOffset.doc.top + parentNode.offsetHeight - parent.numeric.borderBottomWidth -
                         node.offsetHeight - numeric.top - numeric.marginBottom
-            }
-        };
+                }
+            };
 
         return el;
     }
 
     function getElementOffset(node) {
-        var client = {
-                top: document.documentElement.clientTop || document.body.clientTop || 0,
-                left: document.documentElement.clientLeft || document.body.clientLeft || 0
-            },
-            scroll = {
-                top: win.pageYOffset || docElem.scrollTop,
-                left: win.pageXOffset || docElem.scrollLeft
-            },
-            box = node.getBoundingClientRect();
+        var box = node.getBoundingClientRect();
 
             return {
                 doc: {
-                    left: box.left + scroll.left - client.left,
-                    top: box.top + scroll.top - client.top
+                    top: box.top + window.pageYOffset,
+                    left: box.left + window.pageXOffset
                 },
                 win: box
             };
