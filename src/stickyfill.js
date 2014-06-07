@@ -1,3 +1,10 @@
+/*!
+ * Stickyfill -- `position: sticky` polyfill
+ * https://github.com/wilddeer/stickyfill
+ * Copyright Oleg Korsunsky | http://wd.dizaina.net/
+ *
+ * MIT License
+ */
 (function(doc, win) {
     var watchArray = [],
         scroll = {

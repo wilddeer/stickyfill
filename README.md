@@ -92,3 +92,7 @@ Attach event listeners and start watching for stickies in `Stickyfill.stickies`.
 ####`Stickyfill.stickies`
 
 Array of parametric objects for all added stickies.
+
+###License
+
+[MIT license](http://opensource.org/licenses/MIT).
