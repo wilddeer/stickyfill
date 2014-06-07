@@ -1,8 +1,8 @@
 #`position: sticky` polyfill
 
-The most accurate sticky polyfill out in the wild.
+The most accurate sticky polyfill out in the wild -- [check out different test cases](http://wilddeer.github.io/stickyfill/test/).
 
-What it does:
+###What it does
 
 - supports top-positioned stickies,
 - works in IE9+,
@@ -15,7 +15,7 @@ What it does:
 	- `top` and `margin-bottom` mimic native behavior,
 	- works with `TH` and `TD` elements, but not `TR`s.
 
-What it doesn't:
+###What it doesn't
 
 - doesn't support left, right, bottom or combined stickies,
 - doesn't support stacking of table cell stickies,
@@ -48,6 +48,14 @@ CSS:
     top: 0;
 }
 ```
+
+###Pro tips
+
+- `top` specifies sticky's position relatively to the top edge of the viewport. It accepts negative values, too.
+- Sticky's bottom limit is defined by its `offsetParent` bottom boundary (usually closest relatively positioned parent).
+- You can push sticky's bottom limit up or down by specifying `margin-bottom`.
+
+Check out [the test page](http://wilddeer.github.io/stickyfill/test/) to understand stickies better.
 
 ###API
 
