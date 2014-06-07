@@ -103,7 +103,7 @@
                     clone(el);
                 }
                 el.node.style.position = 'absolute';
-                el.node.style.left = el.offset.left + 'px';
+                el.node.style.left = el.offset.left - (win.opera?el.parent.numeric.borderLeftWidth:0) + 'px';
                 el.node.style.top = 'auto';
                 el.node.style.bottom = 0;
                 el.node.style.width = el.computed.width;
@@ -146,7 +146,6 @@
         if (win.opera || isCell) node.style.position = 'absolute';
 
         var computed = {
-                width: computedStyle.width,
                 top: computedStyle.top,
                 marginTop: computedStyle.marginTop,
                 marginBottom: computedStyle.marginBottom
@@ -161,6 +160,8 @@
             };
 
         if (win.opera || isCell) node.style.position = cachePosition;
+
+        computed.width = computedStyle.width;
 
         var css = {
                 position: node.style.position,
@@ -180,7 +181,8 @@
                     position: parentNode.style.position
                 },
                 numeric: {
-                    borderBottomWidth: parseFloat(getComputedStyle(parentNode).borderBottomWidth) || 0
+                    borderBottomWidth: parseNumeric(getComputedStyle(parentNode).borderBottomWidth),
+                    borderLeftWidth: parseNumeric(getComputedStyle(parentNode).borderLeftWidth)
                 }
             },
 
