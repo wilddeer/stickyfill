@@ -19,6 +19,7 @@ The most accurate sticky polyfill out in the wild -- [check out different test c
 
 - doesn't support left, right, bottom or combined stickies,
 - doesn't support stacking of table cell stickies,
+- doesn't work in overflowed blocks,
 - doesn't parse your CSS! Launch it manually.
 
 ###Usage
