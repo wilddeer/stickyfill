@@ -112,6 +112,7 @@
                 el.node.style.marginLeft = 0;
                 el.node.style.marginRight = 0;
                 el.node.style.marginTop = 0;
+                if (!el.numeric.zIndex) el.node.style.zIndex = 999;
                 break;
 
             case 2:
@@ -126,6 +127,7 @@
                 el.node.style.width = 'auto';
                 el.node.style.marginLeft = 0;
                 el.node.style.marginRight = 0;
+                if (!el.numeric.zIndex) el.node.style.zIndex = 999;
                 el.parent.node.style.position = 'relative';
                 break;
         }
@@ -178,7 +180,8 @@
                 paddingLeft: parseNumeric(computedStyle.paddingLeft),
                 paddingRight: parseNumeric(computedStyle.paddingRight),
                 borderLeftWidth: parseNumeric(computedStyle.borderLeftWidth),
-                borderRightWidth: parseNumeric(computedStyle.borderRightWidth)
+                borderRightWidth: parseNumeric(computedStyle.borderRightWidth),
+                zIndex: parseNumeric(computedStyle.zIndex)
             };
 
         if (win.opera || isCell) node.style.position = cachePosition;
@@ -192,7 +195,8 @@
                 width: node.style.width,
                 marginTop: node.style.marginTop,
                 marginLeft: node.style.marginLeft,
-                marginRight: node.style.marginRight
+                marginRight: node.style.marginRight,
+                zIndex: node.style.zIndex
             },
             parentNode = isCell? node.offsetParent: node.parentNode,
             nodeOffset = getElementOffset(node),
