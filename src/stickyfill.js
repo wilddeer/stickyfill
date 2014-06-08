@@ -257,7 +257,7 @@
 
     function recalcAllParams() {
         for (var i = watchArray.length - 1; i >= 0; i--) {
-            switchElementMode(watchArray[i], 0);
+            if (watchArray[i].mode) switchElementMode(watchArray[i], 0);
             watchArray[i] = getElementParams(watchArray[i].node);
         }
     }  
@@ -291,7 +291,7 @@
     function stop() {
         pause();
         for (var i = watchArray.length - 1; i >= 0; i--) {
-            switchElementMode(watchArray[i], 0);
+            if (watchArray[i].mode) switchElementMode(watchArray[i], 0);
         }   
     }
 
