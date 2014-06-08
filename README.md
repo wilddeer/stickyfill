@@ -9,11 +9,11 @@ The most accurate sticky polyfill out in the wild -- [check out different test c
 - disables in older IEs and in browsers with native `position: sticky` support.
 - Mimics original `position: sticky` behavior:
 
-	- lookes for closest relatively positioned parent,
-	- behaves nicely with horizontal scrolls,
+	- uses parent node as a boundary box,
+	- behaves nicely with horizontal page scrolling,
 	- only works on elements with specified `top`,
-	- `top` and `margin-bottom` mimic native behavior,
-	- works with `TH` and `TD` elements, but not `TR`s.
+	- mimics native `top` and `margin-bottom` behavior,
+	- works with table cells, but not with table rows.
 
 ###What it doesn't
 
@@ -52,7 +52,7 @@ CSS:
 ###Pro tips
 
 - `top` specifies sticky's position relatively to the top edge of the viewport. It accepts negative values, too.
-- Sticky's bottom limit is defined by its `offsetParent` bottom boundary (usually closest relatively positioned parent).
+- Despite common misconception, sticky's bottom limit is defined by its parent node's bottom boundary (or table's bottom boundary in case of table cells). It has nothing to do with `offsetParent` (closest relatively positioned parent). This, however, can be changed in the future.
 - You can push sticky's bottom limit up or down by specifying `margin-bottom`.
 
 Check out [the test page](http://wilddeer.github.io/stickyfill/test/) to understand stickies better.

@@ -126,7 +126,7 @@
                 el.node.style.width = 'auto';
                 el.node.style.marginLeft = 0;
                 el.node.style.marginRight = 0;
-                if (el.cell) el.parent.node.style.position = 'relative';
+                el.parent.node.style.position = 'relative';
                 break;
         }
 
@@ -159,8 +159,6 @@
     }
 
     function getElementParams(node) {
-        if (!node.parentNode) return;
-
         var computedStyle = getComputedStyle(node),
             isCell = computedStyle.display == 'table-cell',
             cachePosition = node.style.position;
@@ -196,7 +194,7 @@
                 marginLeft: node.style.marginLeft,
                 marginRight: node.style.marginRight
             },
-            parentNode = node.offsetParent,
+            parentNode = isCell? node.offsetParent: node.parentNode,
             nodeOffset = getElementOffset(node),
             parentOffset = getElementOffset(parentNode),
             
