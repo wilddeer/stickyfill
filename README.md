@@ -50,6 +50,16 @@ CSS:
 }
 ```
 
+Also worth having:
+
+```css
+.sticky:before,
+.sticky:after {
+    content: '';
+    display: table;
+}
+```
+
 ###Pro tips
 
 - `top` specifies sticky's position relatively to the top edge of the viewport. It accepts negative values, too.
