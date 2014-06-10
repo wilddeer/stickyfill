@@ -1,6 +1,8 @@
 #`position: sticky` polyfill
 
-The most accurate sticky polyfill out in the wild -- [check out different test cases](http://wilddeer.github.io/stickyfill/test/).
+The most accurate sticky polyfill out in the wild.
+
+Check out [the demo](http://wd.dizaina.net/en/scripts/stickyfill/) and [use cases test page](http://wilddeer.github.io/stickyfill/test/).
 
 ###What it does
 
