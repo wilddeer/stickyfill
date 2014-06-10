@@ -67,7 +67,7 @@
             scroll = currentScroll;
             rebuild();
         }
-        else {
+        else if (currentScroll.top != scroll.top) {
             scroll = currentScroll;
             recalcAllPos();
         }
@@ -89,20 +89,30 @@
 
     function switchElementMode(el, mode) {
         switch (mode) {
-            case 0:
-                if (el.clone) {
-                    killClone(el);
-                }
+            case -1:
+                el.clone && killClone(el);
 
                 mergeObjects(el.node.style, el.css);
 
                 el.parent.node.style.position = el.parent.css.position;
                 break;
 
+            case 0:
+                (el.clone || clone(el)).style.display = el.cell? 'table-cell': 'none';
+ 
+                el.parent.node.style.position = 'relative';
+                if (!el.numeric.zIndex) el.node.style.zIndex = 999;
+
+                el.node.style.position = 'static';
+                el.node.style.width = el.css.width;
+                el.node.style.marginLeft = el.css.marginLeft;
+                el.node.style.marginRight = el.css.marginRight;
+                el.node.style.marginTop = el.css.marginTop;
+                break;
+
             case 1:
-                if (!el.clone) {
-                    clone(el);
-                }
+                if (!el.cell) el.clone.style.display = 'block';
+
                 el.node.style.position = 'fixed';
                 el.node.style.left = el.box.left + 'px';
                 el.node.style.right = el.box.right + 'px';
@@ -112,13 +122,11 @@
                 el.node.style.marginLeft = 0;
                 el.node.style.marginRight = 0;
                 el.node.style.marginTop = 0;
-                if (!el.numeric.zIndex) el.node.style.zIndex = 999;
                 break;
 
             case 2:
-                if (!el.clone) {
-                    clone(el);
-                }
+                if (!el.cell) el.clone.style.display = 'block';
+
                 el.node.style.position = 'absolute';
                 el.node.style.left = el.offset.left + 'px';
                 el.node.style.right = el.offset.right + 'px';
@@ -127,8 +135,6 @@
                 el.node.style.width = 'auto';
                 el.node.style.marginLeft = 0;
                 el.node.style.marginRight = 0;
-                if (!el.numeric.zIndex) el.node.style.zIndex = 999;
-                el.parent.node.style.position = 'relative';
                 break;
         }
 
@@ -146,12 +152,14 @@
         el.clone.style.marginBottom = el.computed.marginBottom;
         el.clone.style.marginLeft = el.computed.marginLeft;
         el.clone.style.marginRight = el.computed.marginRight;
-        el.clone.style.padding = el.clone.style.border = 0;
+        el.clone.style.padding = el.clone.style.border = el.clone.style.borderSpacing = 0;
         el.clone.style.position = 'static';
 
         el.node.parentNode.insertBefore(el.clone, refElement);
 
         if (el.cell) el.clone.appendChild(el.node);
+
+        return el.clone;
     }
 
     function killClone(el) {
@@ -257,8 +265,9 @@
 
     function recalcAllParams() {
         for (var i = watchArray.length - 1; i >= 0; i--) {
-            if (watchArray[i].mode) switchElementMode(watchArray[i], 0);
+            if (watchArray[i].mode !== -1) switchElementMode(watchArray[i], -1);
             watchArray[i] = getElementParams(watchArray[i].node);
+            switchElementMode(watchArray[i], 0);
         }
     }  
 
@@ -277,7 +286,7 @@
 
     function rebuild() {
         recalcAllParams();
-        updateScrollPos();
+        recalcAllPos();
     }
 
     function pause() {
@@ -291,7 +300,7 @@
     function stop() {
         pause();
         for (var i = watchArray.length - 1; i >= 0; i--) {
-            if (watchArray[i].mode) switchElementMode(watchArray[i], 0);
+            if (watchArray[i].mode) switchElementMode(watchArray[i], -1);
         }   
     }
 
@@ -301,7 +310,11 @@
     }
 
     function add(node) {
-        watchArray.push(getElementParams(node));
+        var el = getElementParams(node);
+
+        switchElementMode(el, 0);
+        watchArray.push(el);
+
         if (!initialized) {
             init();
         }
