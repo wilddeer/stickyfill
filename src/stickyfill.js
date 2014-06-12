@@ -118,44 +118,42 @@
     }
 
     function switchElementMode(el, mode) {
+        var nodeStyle = el.node.style;
+
         switch (mode) {
             case 0:
-                el.node.style.position = 'absolute';
-                el.node.style.left = el.offset.left + 'px';
-                el.node.style.right = el.offset.right + 'px';
-                el.node.style.top = el.offset.top + 'px';
-                el.node.style.bottom = 'auto';
-                el.node.style.width = 'auto';
-                el.node.style.marginLeft = 0;
-                el.node.style.marginRight = 0;
-                el.node.style.marginTop = 0;
+                nodeStyle.position = 'absolute';
+                nodeStyle.left = el.offset.left + 'px';
+                nodeStyle.right = el.offset.right + 'px';
+                nodeStyle.top = el.offset.top + 'px';
+                nodeStyle.bottom = 'auto';
+                nodeStyle.width = 'auto';
+                nodeStyle.marginLeft = 0;
+                nodeStyle.marginRight = 0;
+                nodeStyle.marginTop = 0;
                 break;
 
             case 1:
-                //if (!el.cell) el.clone.style.visibility = 'hidden';
-
-                el.node.style.position = 'fixed';
-                el.node.style.left = el.box.left + 'px';
-                el.node.style.right = el.box.right + 'px';
-                el.node.style.top = el.css.top;
-                el.node.style.bottom = 'auto';
-                el.node.style.width = 'auto';
-                el.node.style.marginLeft = 0;
-                el.node.style.marginRight = 0;
-                el.node.style.marginTop = 0;
+                nodeStyle.position = 'fixed';
+                nodeStyle.left = el.box.left + 'px';
+                nodeStyle.right = el.box.right + 'px';
+                nodeStyle.top = el.css.top;
+                nodeStyle.bottom = 'auto';
+                nodeStyle.width = 'auto';
+                nodeStyle.marginLeft = 0;
+                nodeStyle.marginRight = 0;
+                nodeStyle.marginTop = 0;
                 break;
 
             case 2:
-                //if (!el.cell) el.clone.style.visibility = 'hidden';
-
-                el.node.style.position = 'absolute';
-                el.node.style.left = el.offset.left + 'px';
-                el.node.style.right = el.offset.right + 'px';
-                el.node.style.top = 'auto';
-                el.node.style.bottom = 0;
-                el.node.style.width = 'auto';
-                el.node.style.marginLeft = 0;
-                el.node.style.marginRight = 0;
+                nodeStyle.position = 'absolute';
+                nodeStyle.left = el.offset.left + 'px';
+                nodeStyle.right = el.offset.right + 'px';
+                nodeStyle.top = 'auto';
+                nodeStyle.bottom = 0;
+                nodeStyle.width = 'auto';
+                nodeStyle.marginLeft = 0;
+                nodeStyle.marginRight = 0;
                 break;
         }
 
@@ -163,18 +161,19 @@
     }
 
     function clone(el) {
-        var refElement = el.node.nextSibling || el.node;
-
         el.clone = document.createElement(el.cell?el.node.tagName:'div');
 
-        el.clone.style.height = el.height + 'px';
-        el.clone.style.width = el.width + 'px';
-        el.clone.style.marginTop = el.computed.marginTop;
-        el.clone.style.marginBottom = el.computed.marginBottom;
-        el.clone.style.marginLeft = el.computed.marginLeft;
-        el.clone.style.marginRight = el.computed.marginRight;
-        el.clone.style.padding = el.clone.style.border = el.clone.style.borderSpacing = 0;
-        el.clone.style.position = 'static';
+        var refElement = el.node.nextSibling || el.node,
+            cloneStyle = el.clone.style;
+
+        cloneStyle.height = el.height + 'px';
+        cloneStyle.width = el.width + 'px';
+        cloneStyle.marginTop = el.computed.marginTop;
+        cloneStyle.marginBottom = el.computed.marginBottom;
+        cloneStyle.marginLeft = el.computed.marginLeft;
+        cloneStyle.marginRight = el.computed.marginRight;
+        cloneStyle.padding = cloneStyle.border = cloneStyle.borderSpacing = 0;
+        cloneStyle.position = 'static';
 
         el.node.parentNode.insertBefore(el.clone, refElement);
 
@@ -192,6 +191,8 @@
     function getElementParams(node) {
         var computedStyle = getComputedStyle(node),
             isCell = computedStyle.display == 'table-cell',
+            parentNode = isCell? node.offsetParent: node.parentNode,
+            parentComputedStyle = getComputedStyle(parentNode),
             cachePosition = node.style.position;
 
         if (win.opera || isCell) node.style.position = 'absolute';
@@ -227,7 +228,6 @@
                 marginRight: node.style.marginRight,
                 zIndex: node.style.zIndex
             },
-            parentNode = isCell? node.offsetParent: node.parentNode,
             nodeOffset = getElementOffset(node),
             parentOffset = getElementOffset(parentNode),
             
@@ -237,10 +237,10 @@
                     position: parentNode.style.position
                 },
                 numeric: {
-                    borderLeftWidth: parseNumeric(getComputedStyle(parentNode).borderLeftWidth),
-                    borderRightWidth: parseNumeric(getComputedStyle(parentNode).borderRightWidth),
-                    borderTopWidth: parseNumeric(getComputedStyle(parentNode).borderTopWidth),
-                    borderBottomWidth: parseNumeric(getComputedStyle(parentNode).borderBottomWidth)
+                    borderLeftWidth: parseNumeric(parentComputedStyle.borderLeftWidth),
+                    borderRightWidth: parseNumeric(parentComputedStyle.borderRightWidth),
+                    borderTopWidth: parseNumeric(parentComputedStyle.borderTopWidth),
+                    borderBottomWidth: parseNumeric(parentComputedStyle.borderBottomWidth)
                 }
             },
 
