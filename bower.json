@@ -1,0 +1,25 @@
+{
+  "name": "Stickyfill",
+  "version": "1.0.0",
+  "homepage": "http://wd.dizaina.net/en/scripts/stickyfill/",
+  "authors": [
+    "Oleg Korsunsky <wd@dizaina.net>"
+  ],
+  "description": "`position: sticky` polyfill",
+  "main": [
+    "dist/stickyfill.min.js"
+  ],
+  "keywords": [
+    "sticky",
+    "polyfill",
+    "framework-agnostic",
+    "library-agnostic"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test"
+  ]
+}

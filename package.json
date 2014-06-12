@@ -1,0 +1,22 @@
+{
+  "name": "Stickyfill",
+  "version": "1.0.0",
+  "license": "MIT",
+  "homepage": "https://github.com/wilddeer/stickyfill",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wilddeer/stickyfill.git"
+  },
+  "author": {
+    "name": "Oleg Korsunsky",
+    "url": "http://wd.dizaina.net/"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-uglify": "~0.2.5",
+    "grunt-contrib-concat": "~0.3.0",
+    "grunt-contrib-watch": "~0.5.3",
+    "grunt-bump": "0.0.14",
+    "grunt-shell": "~0.7.0"
+  }
+}
