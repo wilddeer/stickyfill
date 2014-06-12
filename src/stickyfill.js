@@ -1,15 +1,12 @@
 (function(doc, win) {
     var watchArray = [],
-        scroll = {
-            top: 0,
-            left: 0
-        },
+        scroll,
         initialized = false,
         html = doc.documentElement,
         noop = function() {};
 
     //test getComputedStyle
-    if (!window.getComputedStyle) {
+    if (!win.getComputedStyle) {
         seppuku();
     }
 
@@ -26,6 +23,8 @@
             seppuku();
         }
     }
+
+    updateScrollPos();
 
     //commit seppuku!
     function seppuku() {
@@ -51,19 +50,32 @@
     }
 
     function updateScrollPos() {
-        var currentScroll = {
-                top: window.pageYOffset,
-                left: window.pageXOffset
-            };
+        scroll = {
+            top: win.pageYOffset,
+            left: win.pageXOffset
+        };
+    }
 
-        if (currentScroll.left != scroll.left) {
-            scroll = currentScroll;
+    function onScroll() {
+        if (win.pageXOffset != scroll.left) {
+            scroll.left = win.pageXOffset;
             rebuild();
         }
-        else if (currentScroll.top != scroll.top) {
-            scroll = currentScroll;
+        
+        if (win.pageYOffset != scroll.top) {
+            scroll.top = win.pageYOffset;
             recalcAllPos();
         }
+    }
+
+    //fixes flickering
+    function onWheel(event) {
+        setTimeout(function() {
+            if (win.pageYOffset != scroll.top) {
+                scroll.top = win.pageYOffset;
+                recalcAllPos();
+            }
+        }, 0);
     }
 
     function recalcAllPos() {
@@ -80,31 +92,47 @@
         }
     }
 
+    function initElement(el) {
+        if (!el.clone) clone(el);
+        el.parent.node.style.position = 'relative';
+        if (!el.numeric.zIndex) el.node.style.zIndex = 999;
+    }
+
+    function deinitElement(el) {
+        el.clone && killClone(el);
+        mergeObjects(el.node.style, el.css);
+        el.parent.node.style.position = el.parent.css.position;
+        el.mode = -1;
+    }
+
+    function initAll() {
+        for (var i = watchArray.length - 1; i >= 0; i--) {
+            initElement(watchArray[i]);
+        }
+    }
+
+    function deinitAll() {
+        for (var i = watchArray.length - 1; i >= 0; i--) {
+            deinitElement(watchArray[i]);
+        }
+    }
+
     function switchElementMode(el, mode) {
         switch (mode) {
-            case -1:
-                el.clone && killClone(el);
-
-                mergeObjects(el.node.style, el.css);
-
-                el.parent.node.style.position = el.parent.css.position;
-                break;
-
             case 0:
-                (el.clone || clone(el)).style.display = el.cell? 'table-cell': 'none';
- 
-                el.parent.node.style.position = 'relative';
-                if (!el.numeric.zIndex) el.node.style.zIndex = 999;
-
-                el.node.style.position = 'static';
-                el.node.style.width = el.css.width;
-                el.node.style.marginLeft = el.css.marginLeft;
-                el.node.style.marginRight = el.css.marginRight;
-                el.node.style.marginTop = el.css.marginTop;
+                el.node.style.position = 'absolute';
+                el.node.style.left = el.offset.left + 'px';
+                el.node.style.right = el.offset.right + 'px';
+                el.node.style.top = el.offset.top + 'px';
+                el.node.style.bottom = 'auto';
+                el.node.style.width = 'auto';
+                el.node.style.marginLeft = 0;
+                el.node.style.marginRight = 0;
+                el.node.style.marginTop = 0;
                 break;
 
             case 1:
-                if (!el.cell) el.clone.style.display = 'block';
+                //if (!el.cell) el.clone.style.visibility = 'hidden';
 
                 el.node.style.position = 'fixed';
                 el.node.style.left = el.box.left + 'px';
@@ -118,7 +146,7 @@
                 break;
 
             case 2:
-                if (!el.cell) el.clone.style.display = 'block';
+                //if (!el.cell) el.clone.style.visibility = 'hidden';
 
                 el.node.style.position = 'absolute';
                 el.node.style.left = el.offset.left + 'px';
@@ -137,7 +165,7 @@
     function clone(el) {
         var refElement = el.node.nextSibling || el.node;
 
-        el.clone = document.createElement(el.node.tagName);
+        el.clone = document.createElement(el.cell?el.node.tagName:'div');
 
         el.clone.style.height = el.height + 'px';
         el.clone.style.width = el.width + 'px';
@@ -211,6 +239,7 @@
                 numeric: {
                     borderLeftWidth: parseNumeric(getComputedStyle(parentNode).borderLeftWidth),
                     borderRightWidth: parseNumeric(getComputedStyle(parentNode).borderRightWidth),
+                    borderTopWidth: parseNumeric(getComputedStyle(parentNode).borderTopWidth),
                     borderBottomWidth: parseNumeric(getComputedStyle(parentNode).borderBottomWidth)
                 }
             },
@@ -222,6 +251,7 @@
                     right: getViewportWidth() - nodeOffset.win.right
                 },
                 offset: {
+                    top: nodeOffset.win.top - parentOffset.win.top - parent.numeric.borderTopWidth,
                     left: nodeOffset.win.left - parentOffset.win.left - parent.numeric.borderLeftWidth,
                     right: -nodeOffset.win.right + parentOffset.win.right - parent.numeric.borderRightWidth
                 },
@@ -231,7 +261,7 @@
                 numeric: numeric,
                 width: nodeOffset.win.right - nodeOffset.win.left,
                 height: nodeOffset.win.bottom - nodeOffset.win.top,
-                mode: 0,
+                mode: -1,
                 parent: parent,
                 clone: undefined,
                 limit: {
@@ -249,26 +279,21 @@
 
             return {
                 doc: {
-                    top: box.top + window.pageYOffset,
-                    left: box.left + window.pageXOffset
+                    top: box.top + win.pageYOffset,
+                    left: box.left + win.pageXOffset
                 },
                 win: box
             };
     }
 
-    function recalcAllParams() {
-        for (var i = watchArray.length - 1; i >= 0; i--) {
-            if (watchArray[i].mode !== -1) switchElementMode(watchArray[i], -1);
-            watchArray[i] = getElementParams(watchArray[i].node);
-            switchElementMode(watchArray[i], 0);
-        }
-    }  
-
     function init() {
         if (initialized) return;
 
+        initAll();
         updateScrollPos();
-        win.addEventListener('scroll', updateScrollPos);
+        recalcAllPos();
+        win.addEventListener('scroll', onScroll);
+        win.addEventListener('wheel', onWheel);
 
         //watch for width changes
         win.addEventListener('resize', rebuild);
@@ -278,12 +303,21 @@
     }
 
     function rebuild() {
-        recalcAllParams();
+        if (!initialized) return;
+
+        deinitAll();
+        
+        for (var i = watchArray.length - 1; i >= 0; i--) {
+            watchArray[i] = getElementParams(watchArray[i].node);
+        }
+        
+        initAll();
         recalcAllPos();
     }
 
     function pause() {
-        win.removeEventListener('scroll', updateScrollPos);
+        win.removeEventListener('scroll', onScroll);
+        win.removeEventListener('wheel', onWheel);
         win.removeEventListener('resize', rebuild);
         win.removeEventListener('orientationchange', rebuild);
 
@@ -292,9 +326,7 @@
 
     function stop() {
         pause();
-        for (var i = watchArray.length - 1; i >= 0; i--) {
-            if (watchArray[i].mode) switchElementMode(watchArray[i], -1);
-        }   
+        deinitAll(); 
     }
 
     function kill() {
@@ -305,14 +337,14 @@
     function add(node) {
         var el = getElementParams(node);
 
-        switchElementMode(el, 0);
         watchArray.push(el);
 
         if (!initialized) {
             init();
         }
         else {
-            recalcElementPos(watchArray[watchArray.length - 1]);
+            initElement(el);
+            recalcElementPos(el);
         }
     }
 
