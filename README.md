@@ -24,6 +24,25 @@ Check out [the demo](http://wd.dizaina.net/en/scripts/stickyfill/) and [use case
 - doesn't work in overflowed blocks,
 - doesn't parse your CSS! Launch it manually.
 
+###Installation
+
+Download:
+
+- [stickyfill.min.js](https://raw.github.com/wilddeer/stickyfill/master/dist/stickyfill.min.js) – minified production script
+- [stickyfill.js](https://raw.github.com/wilddeer/stickyfill/master/dist/stickyfill.js) – full development script
+
+Include it on your page:
+
+```html
+<script src="path/to/stickyfill.js"></script>
+```
+
+Also available in [Bower](http://bower.io):
+
+```
+bower install Stickyfill --save
+```
+
 ###Usage
 
 JS:
