@@ -54,7 +54,7 @@
             padding: 0.5em;
             background: #69A9D3;
             border-radius: 0.5em;
-            z-index: 10;
+            z-index: 5000;
         }
 
         .arrows button {
@@ -803,22 +803,28 @@
     <script src="../src/stickyfill.js"></script>
 
     <script>
-        $('.sticky').Stickyfill();
+        $(function() {
+            $('.sticky').Stickyfill();
 
-        $('.js-top').on('mousedown', function() {
-            window.scrollTo((document.documentElement.scrollLeft || document.body.scrollLeft), (document.documentElement.scrollTop || document.body.scrollTop)-1);
-        });
+            $('p').on('click', function() {
+                $(this).after($(this).clone());
+            });
 
-        $('.js-left').on('mousedown', function() {
-            window.scrollTo((document.documentElement.scrollLeft || document.body.scrollLeft)-1, (document.documentElement.scrollTop || document.body.scrollTop));
-        });
+            $('.js-top').on('mousedown', function() {
+                window.scrollTo((document.documentElement.scrollLeft || document.body.scrollLeft), (document.documentElement.scrollTop || document.body.scrollTop)-1);
+            });
 
-        $('.js-right').on('mousedown', function() {
-            window.scrollTo((document.documentElement.scrollLeft || document.body.scrollLeft)+1, (document.documentElement.scrollTop || document.body.scrollTop));
-        });
+            $('.js-left').on('mousedown', function() {
+                window.scrollTo((document.documentElement.scrollLeft || document.body.scrollLeft)-1, (document.documentElement.scrollTop || document.body.scrollTop));
+            });
 
-        $('.js-bottom').on('mousedown', function() {
-            window.scrollTo((document.documentElement.scrollLeft || document.body.scrollLeft), (document.documentElement.scrollTop || document.body.scrollTop)+1);
+            $('.js-right').on('mousedown', function() {
+                window.scrollTo((document.documentElement.scrollLeft || document.body.scrollLeft)+1, (document.documentElement.scrollTop || document.body.scrollTop));
+            });
+
+            $('.js-bottom').on('mousedown', function() {
+                window.scrollTo((document.documentElement.scrollLeft || document.body.scrollLeft), (document.documentElement.scrollTop || document.body.scrollTop)+1);
+            });
         });
     </script>
 </body>
