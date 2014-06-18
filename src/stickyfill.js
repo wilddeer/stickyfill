@@ -3,7 +3,8 @@
         scroll,
         initialized = false,
         html = doc.documentElement,
-        noop = function() {};
+        noop = function() {},
+        checkTimer;
 
     //test getComputedStyle
     if (!win.getComputedStyle) {
@@ -58,12 +59,13 @@
 
     function onScroll() {
         if (win.pageXOffset != scroll.left) {
-            scroll.left = win.pageXOffset;
+            updateScrollPos();
             rebuild();
+            return;
         }
         
         if (win.pageYOffset != scroll.top) {
-            scroll.top = win.pageYOffset;
+            updateScrollPos();
             recalcAllPos();
         }
     }
@@ -92,10 +94,21 @@
         }
     }
 
+    //checks whether stickies start or stop positions have changed
+    function fastCheck() {
+        for (var i = watchArray.length - 1; i >= 0; i--) {
+            if (getDocOffsetTop(watchArray[i].clone) - watchArray[i].docOffsetTop >= 2 ||
+                watchArray[i].parent.node.offsetHeight - watchArray[i].parent.height >= 2) return false;
+        }
+        return true;
+    }
+
     function initElement(el) {
         if (!el.clone) clone(el);
         el.parent.node.style.position = 'relative';
         if (!el.numeric.zIndex) el.node.style.zIndex = 999;
+        el.docOffsetTop = getDocOffsetTop(el.node);
+        el.parent.height = el.parent.node.offsetHeight;
     }
 
     function deinitElement(el) {
@@ -178,8 +191,6 @@
         el.node.parentNode.insertBefore(el.clone, refElement);
 
         if (el.cell) el.clone.appendChild(el.node);
-
-        return el.clone;
     }
 
     function killClone(el) {
@@ -263,7 +274,6 @@
                 height: nodeOffset.win.bottom - nodeOffset.win.top,
                 mode: -1,
                 parent: parent,
-                clone: undefined,
                 limit: {
                     start: nodeOffset.doc.top - numeric.top,
                     end: parentOffset.doc.top + parentNode.offsetHeight - parent.numeric.borderBottomWidth -
@@ -272,6 +282,17 @@
             };
 
         return el;
+    }
+
+    function getDocOffsetTop(node) {
+        var docOffsetTop = 0;
+
+        while (node) {
+            docOffsetTop += node.offsetTop;
+            node = node.offsetParent;
+        }
+
+        return docOffsetTop;
     }
 
     function getElementOffset(node) {
@@ -299,6 +320,10 @@
         win.addEventListener('resize', rebuild);
         win.addEventListener('orientationchange', rebuild);
 
+        checkTimer = setInterval(function() {
+            !fastCheck() && rebuild();
+        }, 500);
+
         initialized = true;
     }
 
@@ -320,6 +345,8 @@
         win.removeEventListener('wheel', onWheel);
         win.removeEventListener('resize', rebuild);
         win.removeEventListener('orientationchange', rebuild);
+
+        clearInterval(checkTimer);
 
         initialized = false;
     }
