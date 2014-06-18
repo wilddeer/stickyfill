@@ -125,6 +125,10 @@ Attach event listeners and start watching for stickies in `Stickyfill.stickies`.
 
 Array of parametric objects for all added stickies.
 
+###Using Stickyfill?
+
+Be sure to drop me a link &rarr; [:envelope: wd@dizaina.net](mailto:wd@dizaina.net). Wanna see it in action.
+
 ###License
 
 [MIT license](http://opensource.org/licenses/MIT).
