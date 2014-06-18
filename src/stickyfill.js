@@ -186,6 +186,7 @@
         cloneStyle.marginLeft = el.computed.marginLeft;
         cloneStyle.marginRight = el.computed.marginRight;
         cloneStyle.padding = cloneStyle.border = cloneStyle.borderSpacing = 0;
+        cloneStyle.fontSize = '1em';
         cloneStyle.position = 'static';
 
         el.node.parentNode.insertBefore(el.clone, refElement);
