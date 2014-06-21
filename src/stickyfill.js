@@ -105,7 +105,8 @@
 
     function initElement(el) {
         if (!el.clone) clone(el);
-        el.parent.node.style.position = 'relative';
+        if (el.parent.computed.position != 'absolute' &&
+            el.parent.computed.position != 'relative') el.parent.node.style.position = 'relative';
         if (!el.numeric.zIndex) el.node.style.zIndex = 999;
         el.docOffsetTop = getDocOffsetTop(el.node);
         el.parent.height = el.parent.node.offsetHeight;
@@ -247,6 +248,9 @@
                 node: parentNode,
                 css: {
                     position: parentNode.style.position
+                },
+                computed: {
+                    position: parentComputedStyle.position
                 },
                 numeric: {
                     borderLeftWidth: parseNumeric(parentComputedStyle.borderLeftWidth),

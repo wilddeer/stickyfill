@@ -112,7 +112,8 @@
 
     function initElement(el) {
         if (!el.clone) clone(el);
-        el.parent.node.style.position = 'relative';
+        if (el.parent.computed.position != 'absolute' &&
+            el.parent.computed.position != 'relative') el.parent.node.style.position = 'relative';
         if (!el.numeric.zIndex) el.node.style.zIndex = 999;
         el.docOffsetTop = getDocOffsetTop(el.node);
         el.parent.height = el.parent.node.offsetHeight;
@@ -193,6 +194,7 @@
         cloneStyle.marginLeft = el.computed.marginLeft;
         cloneStyle.marginRight = el.computed.marginRight;
         cloneStyle.padding = cloneStyle.border = cloneStyle.borderSpacing = 0;
+        cloneStyle.fontSize = '1em';
         cloneStyle.position = 'static';
 
         el.node.parentNode.insertBefore(el.clone, refElement);
@@ -253,6 +255,9 @@
                 node: parentNode,
                 css: {
                     position: parentNode.style.position
+                },
+                computed: {
+                    position: parentComputedStyle.position
                 },
                 numeric: {
                     borderLeftWidth: parseNumeric(parentComputedStyle.borderLeftWidth),
