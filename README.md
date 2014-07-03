@@ -95,6 +95,10 @@ Check out [the test page](http://wilddeer.github.io/stickyfill/test/) to underst
 
 Add new sticky and `init()`, if necessary.
 
+####`Stickyfill.remove(HTMLNode)`
+
+Remove sticky.
+
 ####`Stickyfill.rebuild()`
 
 Recalc all metrics and update stickies' positions.

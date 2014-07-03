@@ -113,9 +113,20 @@
     }
 
     function deinitElement(el) {
+        var deinitParent = true;
+
         el.clone && killClone(el);
         mergeObjects(el.node.style, el.css);
-        el.parent.node.style.position = el.parent.css.position;
+
+        //check whether element's parent is used by other stickies
+        for (var i = watchArray.length - 1; i >= 0; i--) {
+            if (watchArray[i].node !== el.node && watchArray[i].parent.node === el.parent.node) {
+                deinitParent = false;
+                break;
+            }
+        };
+
+        if (deinitParent) el.parent.node.style.position = el.parent.css.position;
         el.mode = -1;
     }
 
@@ -380,10 +391,20 @@
         }
     }
 
+    function remove(node) {
+        for (var i = watchArray.length - 1; i >= 0; i--) {
+            if (watchArray[i].node === node) {
+                deinitElement(watchArray[i]);
+                watchArray.splice(i, 1);
+            }
+        };
+    }
+
     //expose Stickyfill
     win.Stickyfill = {
         stickies: watchArray,
         add: add,
+        remove: remove,
         init: init,
         rebuild: rebuild,
         pause: pause,
