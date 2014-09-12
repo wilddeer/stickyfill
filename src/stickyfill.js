@@ -107,7 +107,6 @@
         if (!el.clone) clone(el);
         if (el.parent.computed.position != 'absolute' &&
             el.parent.computed.position != 'relative') el.parent.node.style.position = 'relative';
-        if (!el.numeric.zIndex) el.node.style.zIndex = 999;
         el.docOffsetTop = getDocOffsetTop(el.node);
         el.parent.height = el.parent.node.offsetHeight;
     }
@@ -186,20 +185,12 @@
     }
 
     function clone(el) {
-        el.clone = document.createElement(el.cell?el.node.tagName:'div');
+        el.clone = el.node.cloneNode(false)
 
         var refElement = el.node.nextSibling || el.node,
             cloneStyle = el.clone.style;
 
-        cloneStyle.height = el.height + 'px';
-        cloneStyle.width = el.width + 'px';
-        cloneStyle.marginTop = el.computed.marginTop;
-        cloneStyle.marginBottom = el.computed.marginBottom;
-        cloneStyle.marginLeft = el.computed.marginLeft;
-        cloneStyle.marginRight = el.computed.marginRight;
-        cloneStyle.padding = cloneStyle.border = cloneStyle.borderSpacing = 0;
-        cloneStyle.fontSize = '1em';
-        cloneStyle.position = 'static';
+        cloneStyle.opacity = 0;
 
         el.node.parentNode.insertBefore(el.clone, refElement);
 
