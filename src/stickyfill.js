@@ -200,6 +200,7 @@
         cloneStyle.padding = cloneStyle.border = cloneStyle.borderSpacing = 0;
         cloneStyle.fontSize = '1em';
         cloneStyle.position = 'static';
+        cloneStyle.cssFloat = el.computed.cssFloat;
 
         el.node.parentNode.insertBefore(el.clone, refElement);
 
@@ -226,7 +227,8 @@
                 marginTop: computedStyle.marginTop,
                 marginBottom: computedStyle.marginBottom,
                 marginLeft: computedStyle.marginLeft,
-                marginRight: computedStyle.marginRight
+                marginRight: computedStyle.marginRight,
+                cssFloat: computedStyle.cssFloat
             },
             numeric = {
                 top: parseNumeric(computedStyle.top),
