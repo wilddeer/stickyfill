@@ -1,6 +1,6 @@
 /*!
  * Stickyfill -- `position: sticky` polyfill
- * v. 1.0.4 | https://github.com/wilddeer/stickyfill
+ * v. 1.0.5 | https://github.com/wilddeer/stickyfill
  * Copyright Oleg Korsunsky | http://wd.dizaina.net/
  *
  * MIT License
@@ -207,6 +207,7 @@
         cloneStyle.padding = cloneStyle.border = cloneStyle.borderSpacing = 0;
         cloneStyle.fontSize = '1em';
         cloneStyle.position = 'static';
+        cloneStyle.cssFloat = el.computed.cssFloat;
 
         el.node.parentNode.insertBefore(el.clone, refElement);
 
@@ -233,7 +234,8 @@
                 marginTop: computedStyle.marginTop,
                 marginBottom: computedStyle.marginBottom,
                 marginLeft: computedStyle.marginLeft,
-                marginRight: computedStyle.marginRight
+                marginRight: computedStyle.marginRight,
+                cssFloat: computedStyle.cssFloat
             },
             numeric = {
                 top: parseNumeric(computedStyle.top),
