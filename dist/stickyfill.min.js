@@ -1,6 +1,6 @@
 /*!
  * Stickyfill -- `position: sticky` polyfill
- * v. 1.0.5 | https://github.com/wilddeer/stickyfill
+ * v. 1.1.0 | https://github.com/wilddeer/stickyfill
  * Copyright Oleg Korsunsky | http://wd.dizaina.net/
  *
  * MIT License
