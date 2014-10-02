@@ -51,12 +51,6 @@
         return parseFloat(val) || 0;
     }
 
-    function getViewportWidth() {
-        return parseNumeric(getComputedStyle(html).marginLeft) +
-                parseNumeric(getComputedStyle(html).marginRight) +
-                html.offsetWidth;
-    }
-
     function updateScrollPos() {
         scroll = {
             top: win.pageYOffset,
@@ -281,7 +275,7 @@
                 node: node,
                 box: {
                     left: nodeOffset.win.left,
-                    right: getViewportWidth() - nodeOffset.win.right
+                    right: html.clientWidth - nodeOffset.win.right
                 },
                 offset: {
                     top: nodeOffset.win.top - parentOffset.win.top - parent.numeric.borderTopWidth,
