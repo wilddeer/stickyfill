@@ -374,7 +374,12 @@
 
     function kill() {
         stop();
-        watchArray = [];
+
+        //empty the array without loosing the references,
+        //the most performant method according to http://jsperf.com/empty-javascript-array
+        while (watchArray.length) {
+            watchArray.pop();
+        }
     }
 
     function add(node) {
