@@ -51,12 +51,6 @@
         return parseFloat(val) || 0;
     }
 
-    function getViewportWidth() {
-        return parseNumeric(getComputedStyle(html).marginLeft) +
-                parseNumeric(getComputedStyle(html).marginRight) +
-                html.offsetWidth;
-    }
-
     function updateScrollPos() {
         scroll = {
             top: win.pageYOffset,
@@ -94,7 +88,9 @@
     }
 
     function recalcElementPos(el) {
-        var currentMode = (scroll.top <= el.limit.start || isNaN(parseFloat(el.computed.top))? 0: scroll.top >= el.limit.end? 2: 1);
+        if (!el.inited) return;
+
+        var currentMode = (scroll.top <= el.limit.start? 0: scroll.top >= el.limit.end? 2: 1);
 
         if (el.mode != currentMode) {
             switchElementMode(el, currentMode);
@@ -111,12 +107,15 @@
     }
 
     function initElement(el) {
+        if (isNaN(parseFloat(el.computed.top)) || el.isCell) return;
+
         if (!el.clone) clone(el);
         if (el.parent.computed.position != 'absolute' &&
             el.parent.computed.position != 'relative') el.parent.node.style.position = 'relative';
-        if (!el.numeric.zIndex) el.node.style.zIndex = 999;
         el.docOffsetTop = getDocOffsetTop(el.node);
         el.parent.height = el.parent.node.offsetHeight;
+
+        el.inited = true;
     }
 
     function deinitElement(el) {
@@ -193,7 +192,7 @@
     }
 
     function clone(el) {
-        el.clone = document.createElement(el.cell?el.node.tagName:'div');
+        el.clone = document.createElement('div');
 
         var refElement = el.node.nextSibling || el.node,
             cloneStyle = el.clone.style;
@@ -210,24 +209,20 @@
         cloneStyle.cssFloat = el.computed.cssFloat;
 
         el.node.parentNode.insertBefore(el.clone, refElement);
-
-        if (el.cell) el.clone.appendChild(el.node);
     }
 
     function killClone(el) {
-        if (el.cell) el.clone.parentNode.insertBefore(el.node, el.clone);
         el.clone.parentNode.removeChild(el.clone);
         el.clone = undefined;
     }
 
     function getElementParams(node) {
         var computedStyle = getComputedStyle(node),
-            isCell = computedStyle.display == 'table-cell',
-            parentNode = isCell? node.offsetParent: node.parentNode,
+            parentNode = node.parentNode,
             parentComputedStyle = getComputedStyle(parentNode),
-            cachePosition = node.style.position;
+            cachedPosition = node.style.position;
 
-        if (win.opera || isCell) node.style.position = 'absolute';
+        node.style.position = 'relative';
 
         var computed = {
                 top: computedStyle.top,
@@ -243,11 +238,10 @@
                 paddingLeft: parseNumeric(computedStyle.paddingLeft),
                 paddingRight: parseNumeric(computedStyle.paddingRight),
                 borderLeftWidth: parseNumeric(computedStyle.borderLeftWidth),
-                borderRightWidth: parseNumeric(computedStyle.borderRightWidth),
-                zIndex: parseNumeric(computedStyle.zIndex)
+                borderRightWidth: parseNumeric(computedStyle.borderRightWidth)
             };
 
-        if (win.opera || isCell) node.style.position = cachePosition;
+        node.style.position = cachedPosition;
 
         var css = {
                 position: node.style.position,
@@ -258,8 +252,7 @@
                 width: node.style.width,
                 marginTop: node.style.marginTop,
                 marginLeft: node.style.marginLeft,
-                marginRight: node.style.marginRight,
-                zIndex: node.style.zIndex
+                marginRight: node.style.marginRight
             },
             nodeOffset = getElementOffset(node),
             parentOffset = getElementOffset(parentNode),
@@ -284,7 +277,7 @@
                 node: node,
                 box: {
                     left: nodeOffset.win.left,
-                    right: getViewportWidth() - nodeOffset.win.right
+                    right: html.clientWidth - nodeOffset.win.right
                 },
                 offset: {
                     top: nodeOffset.win.top - parentOffset.win.top - parent.numeric.borderTopWidth,
@@ -292,12 +285,13 @@
                     right: -nodeOffset.win.right + parentOffset.win.right - parent.numeric.borderRightWidth
                 },
                 css: css,
-                cell: isCell,
+                isCell: computedStyle.display == 'table-cell',
                 computed: computed,
                 numeric: numeric,
                 width: nodeOffset.win.right - nodeOffset.win.left,
                 height: nodeOffset.win.bottom - nodeOffset.win.top,
                 mode: -1,
+                inited: false,
                 parent: parent,
                 limit: {
                     start: nodeOffset.doc.top - numeric.top,
@@ -383,7 +377,12 @@
 
     function kill() {
         stop();
-        watchArray = [];
+
+        //empty the array without loosing the references,
+        //the most performant method according to http://jsperf.com/empty-javascript-array
+        while (watchArray.length) {
+            watchArray.pop();
+        }
     }
 
     function add(node) {
