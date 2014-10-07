@@ -22,7 +22,6 @@ Check out [the demo](http://wd.dizaina.net/en/scripts/stickyfill/) and [use case
 ###What it doesn't
 
 - doesn't support left, right, bottom or combined stickies,
-- doesn't support stacking of table cell stickies,
 - doesn't work in overflowed blocks,
 - doesn't parse your CSS! Launch it manually.
 
@@ -86,8 +85,9 @@ Also worth having a clearfix:
 ###Pro tips
 
 - `top` specifies sticky's position relatively to the top edge of the viewport. It accepts negative values, too.
-- Despite common misconception, sticky's bottom limit is defined by its parent node's bottom boundary (or table's bottom boundary in case of table cells). It has nothing to do with `offsetParent` (closest relatively positioned parent). This, however, can be changed in the future.
+- Despite common misconception, sticky's bottom limit is defined by its parent node's bottom boundary. It has nothing to do with `offsetParent` (closest relatively positioned parent).
 - You can push sticky's bottom limit up or down by specifying `margin-bottom`.
+- Any non-default value (not `visible`) for `overflow`, `overflow-x`, or `overflow-y` on any of the predecessor elements anchors the sticky to the overflow context of that predecessor. Simply speaking, scrolling the predecessor will cause the sticky to stick, scrolling the window will not. This is expected with `overflow: auto` and `overflow: scroll`, but often causes problems and confusion with `overflow: hidden`. Keep this in mind, folks!
 
 Check out [the test page](http://wilddeer.github.io/stickyfill/test/) to understand stickies better.
 
