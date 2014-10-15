@@ -93,8 +93,12 @@
     //checks whether stickies start or stop positions have changed
     function fastCheck() {
         for (var i = watchArray.length - 1; i >= 0; i--) {
-            if (getDocOffsetTop(watchArray[i].clone) - watchArray[i].docOffsetTop >= 2 ||
-                watchArray[i].parent.node.offsetHeight - watchArray[i].parent.height >= 2) return false;
+            if (!watchArray[i].inited) continue;
+
+            var deltaTop = Math.abs(getDocOffsetTop(watchArray[i].clone) - watchArray[i].docOffsetTop),
+                deltaHeight = Math.abs(watchArray[i].parent.node.offsetHeight - watchArray[i].parent.height);
+
+            if (deltaTop >= 2 || deltaHeight >= 2) return false;
         }
         return true;
     }
@@ -102,13 +106,16 @@
     function initElement(el) {
         if (isNaN(parseFloat(el.computed.top)) || el.isCell) return;
 
+        el.inited = true;
+
         if (!el.clone) clone(el);
         if (el.parent.computed.position != 'absolute' &&
             el.parent.computed.position != 'relative') el.parent.node.style.position = 'relative';
-        el.docOffsetTop = getDocOffsetTop(el.node);
-        el.parent.height = el.parent.node.offsetHeight;
 
-        el.inited = true;
+        recalcElementPos(el);
+
+        el.parent.height = el.parent.node.offsetHeight;
+        el.docOffsetTop = getDocOffsetTop(el.clone);
     }
 
     function deinitElement(el) {
@@ -322,9 +329,9 @@
     function init() {
         if (initialized) return;
 
-        initAll();
         updateScrollPos();
-        recalcAllPos();
+        initAll();
+
         win.addEventListener('scroll', onScroll);
         win.addEventListener('wheel', onWheel);
 
@@ -349,7 +356,6 @@
         }
         
         initAll();
-        recalcAllPos();
     }
 
     function pause() {
@@ -388,7 +394,6 @@
         }
         else {
             initElement(el);
-            recalcElementPos(el);
         }
     }
 
