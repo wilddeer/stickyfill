@@ -4,7 +4,17 @@
         initialized = false,
         html = doc.documentElement,
         noop = function() {},
-        checkTimer;
+        checkTimer,
+
+        //visibility API strings
+        hiddenPropertyName = 'hidden',
+        visibilityChangeEventName = 'visibilitychange';
+
+    //fallback to prefixed names in old webkit browsers
+    if (doc.webkitHidden !== undefined) {
+        hiddenPropertyName = 'webkitHidden';
+        visibilityChangeEventName = 'webkitvisibilitychange';
+    }
 
     //test getComputedStyle
     if (!win.getComputedStyle) {
@@ -326,6 +336,27 @@
             };
     }
 
+    function startFastCheckTimer() {
+        checkTimer = setInterval(function() {
+            !fastCheck() && rebuild();
+        }, 500);
+    }
+
+    function stopFastCheckTimer() {
+        clearInterval(checkTimer);
+    }
+
+    function handlePageVisibilityChange() {
+        if (!initialized) return;
+
+        if (document[hiddenPropertyName]) {
+            stopFastCheckTimer();
+        }
+        else {
+            startFastCheckTimer();
+        }
+    }
+
     function init() {
         if (initialized) return;
 
@@ -339,9 +370,10 @@
         win.addEventListener('resize', rebuild);
         win.addEventListener('orientationchange', rebuild);
 
-        checkTimer = setInterval(function() {
-            !fastCheck() && rebuild();
-        }, 500);
+        //watch for page visibility
+        doc.addEventListener(visibilityChangeEventName, handlePageVisibilityChange);
+
+        startFastCheckTimer();
 
         initialized = true;
     }
@@ -363,8 +395,9 @@
         win.removeEventListener('wheel', onWheel);
         win.removeEventListener('resize', rebuild);
         win.removeEventListener('orientationchange', rebuild);
+        doc.removeEventListener(visibilityChangeEventName, handlePageVisibilityChange);
 
-        clearInterval(checkTimer);
+        stopFastCheckTimer();
 
         initialized = false;
     }
