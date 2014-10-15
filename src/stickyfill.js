@@ -385,6 +385,11 @@
     }
 
     function add(node) {
+        //check if Stickyfill is already applied to the node
+        for (var i = watchArray.length - 1; i >= 0; i--) {
+            if (watchArray[i].node === node) return;
+        };
+
         var el = getElementParams(node);
 
         watchArray.push(el);
