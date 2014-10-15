@@ -1,6 +1,6 @@
 /*!
  * Stickyfill -- `position: sticky` polyfill
- * v. 1.1.0 | https://github.com/wilddeer/stickyfill
+ * v. 1.1.1 | https://github.com/wilddeer/stickyfill
  * Copyright Oleg Korsunsky | http://wd.dizaina.net/
  *
  * MIT License
@@ -11,7 +11,17 @@
         initialized = false,
         html = doc.documentElement,
         noop = function() {},
-        checkTimer;
+        checkTimer,
+
+        //visibility API strings
+        hiddenPropertyName = 'hidden',
+        visibilityChangeEventName = 'visibilitychange';
+
+    //fallback to prefixed names in old webkit browsers
+    if (doc.webkitHidden !== undefined) {
+        hiddenPropertyName = 'webkitHidden';
+        visibilityChangeEventName = 'webkitvisibilitychange';
+    }
 
     //test getComputedStyle
     if (!win.getComputedStyle) {
@@ -100,8 +110,12 @@
     //checks whether stickies start or stop positions have changed
     function fastCheck() {
         for (var i = watchArray.length - 1; i >= 0; i--) {
-            if (getDocOffsetTop(watchArray[i].clone) - watchArray[i].docOffsetTop >= 2 ||
-                watchArray[i].parent.node.offsetHeight - watchArray[i].parent.height >= 2) return false;
+            if (!watchArray[i].inited) continue;
+
+            var deltaTop = Math.abs(getDocOffsetTop(watchArray[i].clone) - watchArray[i].docOffsetTop),
+                deltaHeight = Math.abs(watchArray[i].parent.node.offsetHeight - watchArray[i].parent.height);
+
+            if (deltaTop >= 2 || deltaHeight >= 2) return false;
         }
         return true;
     }
@@ -109,13 +123,16 @@
     function initElement(el) {
         if (isNaN(parseFloat(el.computed.top)) || el.isCell) return;
 
+        el.inited = true;
+
         if (!el.clone) clone(el);
         if (el.parent.computed.position != 'absolute' &&
             el.parent.computed.position != 'relative') el.parent.node.style.position = 'relative';
-        el.docOffsetTop = getDocOffsetTop(el.node);
-        el.parent.height = el.parent.node.offsetHeight;
 
-        el.inited = true;
+        recalcElementPos(el);
+
+        el.parent.height = el.parent.node.offsetHeight;
+        el.docOffsetTop = getDocOffsetTop(el.clone);
     }
 
     function deinitElement(el) {
@@ -326,12 +343,33 @@
             };
     }
 
+    function startFastCheckTimer() {
+        checkTimer = setInterval(function() {
+            !fastCheck() && rebuild();
+        }, 500);
+    }
+
+    function stopFastCheckTimer() {
+        clearInterval(checkTimer);
+    }
+
+    function handlePageVisibilityChange() {
+        if (!initialized) return;
+
+        if (document[hiddenPropertyName]) {
+            stopFastCheckTimer();
+        }
+        else {
+            startFastCheckTimer();
+        }
+    }
+
     function init() {
         if (initialized) return;
 
-        initAll();
         updateScrollPos();
-        recalcAllPos();
+        initAll();
+
         win.addEventListener('scroll', onScroll);
         win.addEventListener('wheel', onWheel);
 
@@ -339,9 +377,10 @@
         win.addEventListener('resize', rebuild);
         win.addEventListener('orientationchange', rebuild);
 
-        checkTimer = setInterval(function() {
-            !fastCheck() && rebuild();
-        }, 500);
+        //watch for page visibility
+        doc.addEventListener(visibilityChangeEventName, handlePageVisibilityChange);
+
+        startFastCheckTimer();
 
         initialized = true;
     }
@@ -356,7 +395,6 @@
         }
         
         initAll();
-        recalcAllPos();
     }
 
     function pause() {
@@ -364,8 +402,9 @@
         win.removeEventListener('wheel', onWheel);
         win.removeEventListener('resize', rebuild);
         win.removeEventListener('orientationchange', rebuild);
+        doc.removeEventListener(visibilityChangeEventName, handlePageVisibilityChange);
 
-        clearInterval(checkTimer);
+        stopFastCheckTimer();
 
         initialized = false;
     }
@@ -386,6 +425,11 @@
     }
 
     function add(node) {
+        //check if Stickyfill is already applied to the node
+        for (var i = watchArray.length - 1; i >= 0; i--) {
+            if (watchArray[i].node === node) return;
+        };
+
         var el = getElementParams(node);
 
         watchArray.push(el);
@@ -395,7 +439,6 @@
         }
         else {
             initElement(el);
-            recalcElementPos(el);
         }
     }
 
