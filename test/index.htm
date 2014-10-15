@@ -880,6 +880,11 @@
         $(function() {
             $('.sticky').Stickyfill();
 
+            $('body').on('contextmenu', 'p', function(event) {
+                event.preventDefault();
+                $(this).remove();
+            });
+
             $('body').on('click', 'p', function() {
                 $(this).after($(this).clone());
             });
