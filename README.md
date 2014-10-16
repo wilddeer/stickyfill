@@ -15,9 +15,7 @@ Check out [the demo](http://wd.dizaina.net/en/scripts/stickyfill/) and [use case
 	- behaves nicely with horizontal page scrolling,
 	- only works on elements with specified `top`,
 	- mimics native `top` and `margin-bottom` behavior,
-	- 	~~works with table cells~~
-
-		[Spec says](http://dev.w3.org/csswg/css-position/#sticky) that table cells are not eligible for `position: sticky`. Safari supports table cell sticky positioning, but Firefox followed the spec and rolled out the support for sticky positioning recently. We now have a nasty situation where we just can't properly polyfill table cell sticky positioning without sniffing due to difference in realisations. So I decided to remove the support for table cell stickies to make the polyfill more consistent across the board. Sorry, lads, no sticky table headers for you.
+	- ~~works with table cells~~ disabled until Firefox [makes a native implementation](https://bugzilla.mozilla.org/show_bug.cgi?id=975644)
 
 ###What it doesn't
 
