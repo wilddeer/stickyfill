@@ -1,14 +1,13 @@
 (function(doc, win) {
-    var watchArray = [],
-        scroll,
-        initialized = false,
-        html = doc.documentElement,
+    var html = doc.documentElement,
         noop = function() {},
-        checkTimer,
+        scroll,
 
         //visibility API strings
         hiddenPropertyName = 'hidden',
         visibilityChangeEventName = 'visibilitychange';
+
+    /* feature checks */
 
     //fallback to prefixed names in old webkit browsers
     if (doc.webkitHidden !== undefined) {
@@ -22,26 +21,25 @@
     }
 
     //test for native support
-    var prefixes = ['', '-webkit-', '-moz-', '-ms-'],
-        block = document.createElement('div');
+    (function() {
+        var prefixes = ['', '-webkit-', '-moz-', '-ms-'],
+            block = document.createElement('div');
 
-    for (var i = prefixes.length - 1; i >= 0; i--) {
-        try {
-            block.style.position = prefixes[i] + 'sticky';
+        for (var i = prefixes.length - 1; i >= 0; i--) {
+            try {
+                block.style.position = prefixes[i] + 'sticky';
+            }
+            catch(e) {}
+
+            if (block.style.position != '') {
+                seppuku();
+            }
         }
-        catch(e) {}
-        if (block.style.position != '') {
-            seppuku();
-        }
-    }
+    })();
 
-    updateScrollPos();
+    /* utility functions */
 
-    //commit seppuku!
-    function seppuku() {
-        init = add = rebuild = pause = stop = kill = noop;
-    }
-
+    //simple merge
     function mergeObjects(targetObj, sourceObject) {
         for (key in sourceObject) {
             if (sourceObject.hasOwnProperty(key)) {
@@ -50,267 +48,9 @@
         }
     }
 
+    //parses float, returns 0 if the `val` is empty
     function parseNumeric(val) {
         return parseFloat(val) || 0;
-    }
-
-    function updateScrollPos() {
-        scroll = {
-            top: win.pageYOffset,
-            left: win.pageXOffset
-        };
-    }
-
-    function onScroll() {
-        if (win.pageXOffset != scroll.left) {
-            updateScrollPos();
-            rebuild();
-            return;
-        }
-        
-        if (win.pageYOffset != scroll.top) {
-            updateScrollPos();
-            recalcAllPos();
-        }
-    }
-
-    //fixes flickering
-    function onWheel(event) {
-        setTimeout(function() {
-            if (win.pageYOffset != scroll.top) {
-                scroll.top = win.pageYOffset;
-                recalcAllPos();
-            }
-        }, 0);
-    }
-
-    function recalcAllPos() {
-        for (var i = watchArray.length - 1; i >= 0; i--) {
-            recalcElementPos(watchArray[i]);
-        }
-    }
-
-    function recalcElementPos(el) {
-        if (!el.inited) return;
-
-        var currentMode = (scroll.top <= el.limit.start? 0: scroll.top >= el.limit.end? 2: 1);
-
-        if (el.mode != currentMode) {
-            switchElementMode(el, currentMode);
-        }
-    }
-
-    //checks whether stickies start or stop positions have changed
-    function fastCheck() {
-        for (var i = watchArray.length - 1; i >= 0; i--) {
-            if (!watchArray[i].inited) continue;
-
-            var deltaTop = Math.abs(getDocOffsetTop(watchArray[i].clone) - watchArray[i].docOffsetTop),
-                deltaHeight = Math.abs(watchArray[i].parent.node.offsetHeight - watchArray[i].parent.height);
-
-            if (deltaTop >= 2 || deltaHeight >= 2) return false;
-        }
-        return true;
-    }
-
-    function initElement(el) {
-        if (isNaN(parseFloat(el.computed.top)) || el.isCell) return;
-
-        el.inited = true;
-
-        if (!el.clone) clone(el);
-        if (el.parent.computed.position != 'absolute' &&
-            el.parent.computed.position != 'relative') el.parent.node.style.position = 'relative';
-
-        recalcElementPos(el);
-
-        el.parent.height = el.parent.node.offsetHeight;
-        el.docOffsetTop = getDocOffsetTop(el.clone);
-    }
-
-    function deinitElement(el) {
-        var deinitParent = true;
-
-        el.clone && killClone(el);
-        mergeObjects(el.node.style, el.css);
-
-        //check whether element's parent is used by other stickies
-        for (var i = watchArray.length - 1; i >= 0; i--) {
-            if (watchArray[i].node !== el.node && watchArray[i].parent.node === el.parent.node) {
-                deinitParent = false;
-                break;
-            }
-        };
-
-        if (deinitParent) el.parent.node.style.position = el.parent.css.position;
-        el.mode = -1;
-    }
-
-    function initAll() {
-        for (var i = watchArray.length - 1; i >= 0; i--) {
-            initElement(watchArray[i]);
-        }
-    }
-
-    function deinitAll() {
-        for (var i = watchArray.length - 1; i >= 0; i--) {
-            deinitElement(watchArray[i]);
-        }
-    }
-
-    function switchElementMode(el, mode) {
-        var nodeStyle = el.node.style;
-
-        switch (mode) {
-            case 0:
-                nodeStyle.position = 'absolute';
-                nodeStyle.left = el.offset.left + 'px';
-                nodeStyle.right = el.offset.right + 'px';
-                nodeStyle.top = el.offset.top + 'px';
-                nodeStyle.bottom = 'auto';
-                nodeStyle.width = 'auto';
-                nodeStyle.marginLeft = 0;
-                nodeStyle.marginRight = 0;
-                nodeStyle.marginTop = 0;
-                break;
-
-            case 1:
-                nodeStyle.position = 'fixed';
-                nodeStyle.left = el.box.left + 'px';
-                nodeStyle.right = el.box.right + 'px';
-                nodeStyle.top = el.css.top;
-                nodeStyle.bottom = 'auto';
-                nodeStyle.width = 'auto';
-                nodeStyle.marginLeft = 0;
-                nodeStyle.marginRight = 0;
-                nodeStyle.marginTop = 0;
-                break;
-
-            case 2:
-                nodeStyle.position = 'absolute';
-                nodeStyle.left = el.offset.left + 'px';
-                nodeStyle.right = el.offset.right + 'px';
-                nodeStyle.top = 'auto';
-                nodeStyle.bottom = 0;
-                nodeStyle.width = 'auto';
-                nodeStyle.marginLeft = 0;
-                nodeStyle.marginRight = 0;
-                break;
-        }
-
-        el.mode = mode;
-    }
-
-    function clone(el) {
-        el.clone = document.createElement('div');
-
-        var refElement = el.node.nextSibling || el.node,
-            cloneStyle = el.clone.style;
-
-        cloneStyle.height = el.height + 'px';
-        cloneStyle.width = el.width + 'px';
-        cloneStyle.marginTop = el.computed.marginTop;
-        cloneStyle.marginBottom = el.computed.marginBottom;
-        cloneStyle.marginLeft = el.computed.marginLeft;
-        cloneStyle.marginRight = el.computed.marginRight;
-        cloneStyle.padding = cloneStyle.border = cloneStyle.borderSpacing = 0;
-        cloneStyle.fontSize = '1em';
-        cloneStyle.position = 'static';
-        cloneStyle.cssFloat = el.computed.cssFloat;
-
-        el.node.parentNode.insertBefore(el.clone, refElement);
-    }
-
-    function killClone(el) {
-        el.clone.parentNode.removeChild(el.clone);
-        el.clone = undefined;
-    }
-
-    function getElementParams(node) {
-        var computedStyle = getComputedStyle(node),
-            parentNode = node.parentNode,
-            parentComputedStyle = getComputedStyle(parentNode),
-            cachedPosition = node.style.position;
-
-        node.style.position = 'relative';
-
-        var computed = {
-                top: computedStyle.top,
-                marginTop: computedStyle.marginTop,
-                marginBottom: computedStyle.marginBottom,
-                marginLeft: computedStyle.marginLeft,
-                marginRight: computedStyle.marginRight,
-                cssFloat: computedStyle.cssFloat
-            },
-            numeric = {
-                top: parseNumeric(computedStyle.top),
-                marginBottom: parseNumeric(computedStyle.marginBottom),
-                paddingLeft: parseNumeric(computedStyle.paddingLeft),
-                paddingRight: parseNumeric(computedStyle.paddingRight),
-                borderLeftWidth: parseNumeric(computedStyle.borderLeftWidth),
-                borderRightWidth: parseNumeric(computedStyle.borderRightWidth)
-            };
-
-        node.style.position = cachedPosition;
-
-        var css = {
-                position: node.style.position,
-                top: node.style.top,
-                bottom: node.style.bottom,
-                left: node.style.left,
-                right: node.style.right,
-                width: node.style.width,
-                marginTop: node.style.marginTop,
-                marginLeft: node.style.marginLeft,
-                marginRight: node.style.marginRight
-            },
-            nodeOffset = getElementOffset(node),
-            parentOffset = getElementOffset(parentNode),
-            
-            parent = {
-                node: parentNode,
-                css: {
-                    position: parentNode.style.position
-                },
-                computed: {
-                    position: parentComputedStyle.position
-                },
-                numeric: {
-                    borderLeftWidth: parseNumeric(parentComputedStyle.borderLeftWidth),
-                    borderRightWidth: parseNumeric(parentComputedStyle.borderRightWidth),
-                    borderTopWidth: parseNumeric(parentComputedStyle.borderTopWidth),
-                    borderBottomWidth: parseNumeric(parentComputedStyle.borderBottomWidth)
-                }
-            },
-
-            el = {
-                node: node,
-                box: {
-                    left: nodeOffset.win.left,
-                    right: html.clientWidth - nodeOffset.win.right
-                },
-                offset: {
-                    top: nodeOffset.win.top - parentOffset.win.top - parent.numeric.borderTopWidth,
-                    left: nodeOffset.win.left - parentOffset.win.left - parent.numeric.borderLeftWidth,
-                    right: -nodeOffset.win.right + parentOffset.win.right - parent.numeric.borderRightWidth
-                },
-                css: css,
-                isCell: computedStyle.display == 'table-cell',
-                computed: computed,
-                numeric: numeric,
-                width: nodeOffset.win.right - nodeOffset.win.left,
-                height: nodeOffset.win.bottom - nodeOffset.win.top,
-                mode: -1,
-                inited: false,
-                parent: parent,
-                limit: {
-                    start: nodeOffset.doc.top - numeric.top,
-                    end: parentOffset.doc.top + parentNode.offsetHeight - parent.numeric.borderBottomWidth -
-                        node.offsetHeight - numeric.top - numeric.marginBottom
-                }
-            };
-
-        return el;
     }
 
     function getDocOffsetTop(node) {
@@ -327,134 +67,462 @@
     function getElementOffset(node) {
         var box = node.getBoundingClientRect();
 
-            return {
-                doc: {
-                    top: box.top + win.pageYOffset,
-                    left: box.left + win.pageXOffset
-                },
-                win: box
-            };
-    }
-
-    function startFastCheckTimer() {
-        checkTimer = setInterval(function() {
-            !fastCheck() && rebuild();
-        }, 500);
-    }
-
-    function stopFastCheckTimer() {
-        clearInterval(checkTimer);
-    }
-
-    function handlePageVisibilityChange() {
-        if (!initialized) return;
-
-        if (document[hiddenPropertyName]) {
-            stopFastCheckTimer();
-        }
-        else {
-            startFastCheckTimer();
-        }
-    }
-
-    function init() {
-        if (initialized) return;
-
-        updateScrollPos();
-        initAll();
-
-        win.addEventListener('scroll', onScroll);
-        win.addEventListener('wheel', onWheel);
-
-        //watch for width changes
-        win.addEventListener('resize', rebuild);
-        win.addEventListener('orientationchange', rebuild);
-
-        //watch for page visibility
-        doc.addEventListener(visibilityChangeEventName, handlePageVisibilityChange);
-
-        startFastCheckTimer();
-
-        initialized = true;
-    }
-
-    function rebuild() {
-        if (!initialized) return;
-
-        deinitAll();
-        
-        for (var i = watchArray.length - 1; i >= 0; i--) {
-            watchArray[i] = getElementParams(watchArray[i].node);
-        }
-        
-        initAll();
-    }
-
-    function pause() {
-        win.removeEventListener('scroll', onScroll);
-        win.removeEventListener('wheel', onWheel);
-        win.removeEventListener('resize', rebuild);
-        win.removeEventListener('orientationchange', rebuild);
-        doc.removeEventListener(visibilityChangeEventName, handlePageVisibilityChange);
-
-        stopFastCheckTimer();
-
-        initialized = false;
-    }
-
-    function stop() {
-        pause();
-        deinitAll(); 
-    }
-
-    function kill() {
-        stop();
-
-        //empty the array without loosing the references,
-        //the most performant method according to http://jsperf.com/empty-javascript-array
-        while (watchArray.length) {
-            watchArray.pop();
-        }
-    }
-
-    function add(node) {
-        //check if Stickyfill is already applied to the node
-        for (var i = watchArray.length - 1; i >= 0; i--) {
-            if (watchArray[i].node === node) return;
+        return {
+            doc: {
+                top: box.top + win.pageYOffset,
+                left: box.left + win.pageXOffset
+            },
+            win: box
         };
-
-        var el = getElementParams(node);
-
-        watchArray.push(el);
-
-        if (!initialized) {
-            init();
-        }
-        else {
-            initElement(el);
-        }
     }
 
-    function remove(node) {
-        for (var i = watchArray.length - 1; i >= 0; i--) {
-            if (watchArray[i].node === node) {
-                deinitElement(watchArray[i]);
-                watchArray.splice(i, 1);
+
+    //Stickyfill constructor
+    function Stickyfill() {
+        this.watchArray = [];
+        this._turnedOn = false;
+        this._updateScrollPos();
+        this.turnOn();
+    }
+
+    Stickyfill.prototype = {
+        refresh: function() {
+            var _this = this;
+
+            for (var i = this.watchArray.length - 1; i >= 0; i--) {
+                _this.watchArray[i].refresh();
             }
-        };
+        },
+
+        turnOn: function() {
+            if (this._turnedOn) return;
+
+            this._addListeners();
+            this._turnOnAll();
+            this._turnedOn = true;
+        },
+
+        turnOff: function() {
+            if (!this._turnedOn) return;
+
+            this._removeListeners();
+            this._turnOffAll();
+            this._turnedOn = false;
+        },
+
+        kill: function() {
+            var _this = this;
+
+            this.turnOff();
+
+            //empty the array without loosing the references,
+            //the most performant method according to http://jsperf.com/empty-javascript-array
+            while (this.watchArray.length) {
+                _this.watchArray.pop();
+            }
+        },
+
+        add: function(node) {
+            var _this = this;
+
+            //check if Stickyfill is already applied to the node
+            for (var i = this.watchArray.length - 1; i >= 0; i--) {
+                if (_this.watchArray[i].node === node) return;
+            }
+
+            var el = new Sticky(this, node);
+
+            this.watchArray.push(el);
+
+            el.turnOn();
+
+            if (this.watchArray.length === 1) this.turnOn();
+        },
+
+        remove: function(node) {
+            var _this = this;
+
+            for (var i = this.watchArray.length - 1; i >= 0; i--) {
+                if (_this.watchArray[i].node === node) {
+                    _this.watchArray[i].turnOff();
+                    _this.watchArray.splice(i, 1);
+                }
+            }
+
+            if (!this.watchArray.length) this.turnOff();
+        },
+
+        seppuku: function() {
+            for (var method in this) {
+                if (this.hasOwnProperty(method) && typeof method == 'function') {
+                    method = noop;
+                }
+            }
+        },
+
+        _addListeners: function() {
+            var _this = this;
+            win.addEventListener('scroll', function() {
+                _this._scrollListener = arguments.calee;
+                _this._onScroll();
+            });
+            win.addEventListener('wheel', function() {
+                _this._wheelListener = arguments.calee;
+                _this._onWheel();
+            });
+
+            //watch for width changes
+            win.addEventListener('resize', function() {
+                _this._resizeListener = arguments.calee;
+                _this.refresh();
+            });
+            win.addEventListener('orientationchange', function() {
+                _this._orientationchangeListener = arguments.calee;
+                _this.refresh();
+            });
+
+            //watch for page visibility
+            doc.addEventListener(visibilityChangeEventName, function() {
+                _this._visibilitychangeListener = arguments.calee;
+                _this._handlePageVisibilityChange();
+            });
+
+            this._startFastCheckTimer();
+        },
+
+        _removeListeners: function() {
+            win.removeEventListener('scroll', this._scrollListener);
+            win.removeEventListener('wheel', this._wheelListener);
+            win.removeEventListener('resize', this._resizeListener);
+            win.removeEventListener('orientationchange', this._orientationchangeListener);
+            doc.removeEventListener(visibilityChangeEventName, this._visibilitychangeListener);
+
+            this._stopFastCheckTimer();
+        },
+
+        //checks whether stickies start or stop positions have changed
+        _fastCheck: function() {
+            var _this = this;
+
+            for (var i = this.watchArray.length - 1; i >= 0; i--) {
+                _this.watchArray[i]._fastCheck();
+            }
+        },
+
+        _recalcModeAll: function() {
+            var _this = this;
+
+            for (var i = this.watchArray.length - 1; i >= 0; i--) {
+                _this.watchArray[i]._recalcMode();
+            }
+        },
+
+        _turnOnAll: function() {
+            var _this = this;
+
+            for (var i = this.watchArray.length - 1; i >= 0; i--) {
+                _this.watchArray[i].turnOn();
+            }
+        },
+
+        _turnOffAll: function() {
+            var _this = this;
+
+            for (var i = this.watchArray.length - 1; i >= 0; i--) {
+                _this.watchArray[i].turnOff();
+            }
+        },
+
+        _startFastCheckTimer: function() {
+            var _this = this;
+
+            this._checkTimer = setInterval(function() {
+                _this._fastCheck();
+            }, 500);
+        },
+
+        _stopFastCheckTimer: function() {
+            clearInterval(this._checkTimer);
+        },
+
+        _updateScrollPos: function() {
+            scroll = {
+                top: win.pageYOffset,
+                left: win.pageXOffset
+            };
+        },
+
+        _onScroll: function() {
+            if (win.pageXOffset != scroll.left) {
+                this._updateScrollPos();
+                this.refresh();
+                return;
+            }
+
+            if (win.pageYOffset != scroll.top) {
+                this._updateScrollPos();
+                this._recalcModeAll();
+            }
+        },
+
+        //fixes flickering
+        _onWheel: function(event) {
+            var _this = this;
+
+            setTimeout(function() {
+                if (win.pageYOffset != scroll.top) {
+                    _this._updateScrollPos();
+                    _this._recalcModeAll();
+                }
+            }, 0);
+        },
+
+        _handlePageVisibilityChange: function() {
+            if (!this._turnedOn) return;
+
+            if (document[hiddenPropertyName]) {
+                stopFastCheckTimer();
+            }
+            else {
+                startFastCheckTimer();
+            }
+        }
+    };
+
+    //Sticky constructor
+    function Sticky(stickyfill, node) {
+        this.stickyfill = stickyfill;
+        this.node = node;
+        this.init();
     }
 
-    //expose Stickyfill
-    win.Stickyfill = {
-        stickies: watchArray,
-        add: add,
-        remove: remove,
-        init: init,
-        rebuild: rebuild,
-        pause: pause,
-        stop: stop,
-        kill: kill
+    Sticky.prototype = {
+        init: function() {
+            var node = this.node,
+                computedStyle = getComputedStyle(node),
+                parentNode = node.parentNode,
+                parentComputedStyle = getComputedStyle(parentNode),
+                cachedPosition = node.style.position,
+                nodeOffset,
+                parentOffset;
+
+            node.style.position = 'relative';
+
+            this.computed = {
+                top: computedStyle.top,
+                marginTop: computedStyle.marginTop,
+                marginBottom: computedStyle.marginBottom,
+                marginLeft: computedStyle.marginLeft,
+                marginRight: computedStyle.marginRight,
+                cssFloat: computedStyle.cssFloat
+            };
+
+            this.numeric = {
+                top: parseNumeric(computedStyle.top),
+                marginBottom: parseNumeric(computedStyle.marginBottom),
+                paddingLeft: parseNumeric(computedStyle.paddingLeft),
+                paddingRight: parseNumeric(computedStyle.paddingRight),
+                borderLeftWidth: parseNumeric(computedStyle.borderLeftWidth),
+                borderRightWidth: parseNumeric(computedStyle.borderRightWidth)
+            };
+
+            node.style.position = cachedPosition;
+
+            this.css = {
+                position: node.style.position,
+                top: node.style.top,
+                bottom: node.style.bottom,
+                left: node.style.left,
+                right: node.style.right,
+                width: node.style.width,
+                marginTop: node.style.marginTop,
+                marginLeft: node.style.marginLeft,
+                marginRight: node.style.marginRight
+            };
+
+            nodeOffset = getElementOffset(node);
+            parentOffset = getElementOffset(parentNode);
+
+            this.parent = {
+                node: parentNode,
+                css: {
+                    position: parentNode.style.position
+                },
+                computed: {
+                    position: parentComputedStyle.position
+                },
+                numeric: {
+                    borderLeftWidth: parseNumeric(parentComputedStyle.borderLeftWidth),
+                    borderRightWidth: parseNumeric(parentComputedStyle.borderRightWidth),
+                    borderTopWidth: parseNumeric(parentComputedStyle.borderTopWidth),
+                    borderBottomWidth: parseNumeric(parentComputedStyle.borderBottomWidth)
+                }
+            };
+
+            this.box = {
+                left: nodeOffset.win.left,
+                right: html.clientWidth - nodeOffset.win.right
+            };
+
+            this.offset = {
+                top: nodeOffset.win.top - parentOffset.win.top - this.parent.numeric.borderTopWidth,
+                left: nodeOffset.win.left - parentOffset.win.left - this.parent.numeric.borderLeftWidth,
+                right: -nodeOffset.win.right + parentOffset.win.right - this.parent.numeric.borderRightWidth
+            };
+
+            this.isCell = computedStyle.display == 'table-cell';
+            this.width = nodeOffset.win.right - nodeOffset.win.left;
+            this.height = nodeOffset.win.bottom - nodeOffset.win.top;
+            this.mode = -1;
+            this.turnedOn = false;
+            this.limit = {
+                start: nodeOffset.doc.top - this.numeric.top,
+                end: parentOffset.doc.top + parentNode.offsetHeight - this.parent.numeric.borderBottomWidth -
+                     node.offsetHeight - this.numeric.top - this.numeric.marginBottom
+            };
+        },
+
+        turnOn: function() {
+            if (isNaN(parseFloat(this.computed.top)) || this.isCell) return;
+
+            this.turnedOn = true;
+
+            if (!this.clone) this._makeClone();
+            if (this.parent.computed.position != 'absolute' &&
+                this.parent.computed.position != 'relative') this.parent.node.style.position = 'relative';
+
+            this._recalcMode();
+
+            //getting this stuff after clone is in place to prevent browser box model
+            //rounding errors to affect the calculations
+            this.parent.height = this.parent.node.offsetHeight;
+            this.docOffsetTop = getDocOffsetTop(this.clone);
+        },
+
+        turnOff: function() {
+            var _this = this,
+                deinitParent = true;
+
+            this.clone && this._killClone();
+            mergeObjects(this.node.style, this.css);
+
+            //check whether element's parent is used by other stickies
+            for (var i = this.stickyfill.watchArray.length - 1; i >= 0; i--) {
+                if (_this.stickyfill.watchArray[i].node !== _this.node && _this.stickyfill.watchArray[i].parent.node === this.parent.node) {
+                    deinitParent = false;
+                    break;
+                }
+            };
+
+            if (deinitParent) this.parent.node.style.position = this.parent.css.position;
+            this.mode = -1;
+            this.turnedOn = false;
+        },
+
+        refresh: function() {
+            this.turnOff();
+            this.init();
+            this.turnOn();
+        },
+
+        _makeClone: function() {
+            if (this.clone) this.killClone();
+
+            var refElement = this.node.nextSibling || this.node;
+
+            this.clone = document.createElement('div');
+
+            mergeObjects(this.clone.style, {
+                height: this.height + 'px',
+                width: this.width + 'px',
+                marginTop: this.computed.marginTop,
+                marginBottom: this.computed.marginBottom,
+                marginLeft: this.computed.marginLeft,
+                marginRight: this.computed.marginRight,
+                padding: 0,
+                border: 0,
+                borderSpacing: 0,
+                fontSize: '1em',
+                position: 'static',
+                cssFloat: this.computed.cssFloat
+            });
+
+            this.node.parentNode.insertBefore(this.clone, refElement);
+        },
+
+        _killClone: function() {
+            this.clone.parentNode.removeChild(this.clone);
+            this.clone = undefined;
+        },
+
+        //get corresponding mode
+        _recalcMode: function() {
+            if (!this.turnedOn) return;
+
+            var mode = (scroll.top <= this.limit.start? 0: scroll.top >= this.limit.end? 2: 1);
+
+            if (this.mode === mode) return;
+
+            switch (mode) {
+                case 0:
+                    mergeObjects(this.node.style, {
+                        position: 'absolute',
+                        left: this.offset.left + 'px',
+                        right: this.offset.right + 'px',
+                        top: this.offset.top + 'px',
+                        bottom: 'auto',
+                        width: 'auto',
+                        marginLeft: 0,
+                        marginRight: 0,
+                        marginTop: 0
+                    });
+
+                    break;
+
+                case 1:
+                    mergeObjects(this.node.style, {
+                        position: 'fixed',
+                        left: this.box.left + 'px',
+                        right: this.box.right + 'px',
+                        top: this.css.top,
+                        bottom: 'auto',
+                        width: 'auto',
+                        marginLeft: 0,
+                        marginRight: 0,
+                        marginTop: 0
+                    });
+
+                    break;
+
+                case 2:
+                    mergeObjects(this.node.style, {
+                        position: 'absolute',
+                        left: this.offset.left + 'px',
+                        right: this.offset.right + 'px',
+                        top: 'auto',
+                        bottom: 0,
+                        width: 'auto',
+                        marginLeft: 0,
+                        marginRight: 0
+                    });
+
+                    break;
+            }
+
+            this.mode = mode;
+        },
+
+        _fastCheck: function() {
+            if (!this.turnedOn) return;
+
+            var deltaTop = Math.abs(getDocOffsetTop(this.clone) - this.docOffsetTop),
+                deltaHeight = Math.abs(this.parent.node.offsetHeight - this.parent.height);
+
+            if (deltaTop >= 2 || deltaHeight >= 2) this.refresh();
+        }
     };
+
+    win.Stickyfill = new Stickyfill;
 })(document, window);
 
 
