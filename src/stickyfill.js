@@ -196,11 +196,11 @@
         },
 
         //checks whether stickies start or stop positions have changed
-        _fastCheck: function() {
+        _dirtyCheck: function() {
             var _this = this;
 
             for (var i = this.watchArray.length - 1; i >= 0; i--) {
-                _this.watchArray[i]._fastCheck();
+                _this.watchArray[i]._dirtyCheck();
             }
         },
 
@@ -232,7 +232,7 @@
             var _this = this;
 
             this._checkTimer = setInterval(function() {
-                _this._fastCheck();
+                _this._dirtyCheck();
             }, 500);
         },
 
@@ -381,6 +381,7 @@
         },
 
         turnOn: function() {
+            if (this._turnedOn) return;
             if (isNaN(parseFloat(this._p.computed.top)) || this._isCell) return;
 
             this._turnedOn = true;
@@ -398,6 +399,7 @@
         },
 
         turnOff: function() {
+            if (!this._turnedOn) return;
             var _this = this,
                 deinitParent = true;
 
@@ -510,7 +512,7 @@
             this._mode = mode;
         },
 
-        _fastCheck: function() {
+        _dirtyCheck: function() {
             if (!this._turnedOn) return;
 
             var deltaTop = Math.abs(getDocOffsetTop(this._clone) - this._p.docOffsetTop),
