@@ -25,23 +25,23 @@
         var prefixes = ['', '-webkit-', '-moz-', '-ms-'],
             block = document.createElement('div');
 
-        for (var i = prefixes.length - 1; i >= 0; i--) {
+        prefixes.every(function(prefix) {
             try {
-                block.style.position = prefixes[i] + 'sticky';
+                block.style.position = prefix + 'sticky';
             }
             catch(e) {}
 
             if (block.style.position != '') {
                 seppuku();
             }
-        }
+        });
     })();
 
     /* utility functions */
 
     //simple merge
     function mergeObjects(targetObj, sourceObject) {
-        for (key in sourceObject) {
+        for (var key in sourceObject) {
             if (sourceObject.hasOwnProperty(key)) {
                 targetObj[key] = sourceObject[key];
             }
@@ -86,11 +86,9 @@
 
     Stickyfill.prototype = {
         refresh: function() {
-            var _this = this;
-
-            for (var i = this.watchArray.length - 1; i >= 0; i--) {
-                _this.watchArray[i].refresh();
-            }
+            this.watchArray.forEach(function(sticky) {
+                sticky.refresh();
+            });
         },
 
         turnOn: function() {
@@ -127,7 +125,7 @@
 
             //check if Stickyfill is already applied to the node
             for (var i = this.watchArray.length - 1; i >= 0; i--) {
-                if (_this.watchArray[i].node === node) return;
+                if (_this.watchArray[i].node === node) return _this.watchArray[i];
             }
 
             var el = new Sticky(this, node);
@@ -137,48 +135,52 @@
             el.turnOn();
 
             if (this.watchArray.length === 1) this.turnOn();
+
+            return el;
         },
 
         remove: function(node) {
-            var _this = this;
-
-            for (var i = this.watchArray.length - 1; i >= 0; i--) {
-                if (_this.watchArray[i].node === node) {
-                    _this.watchArray[i].turnOff();
-                    _this.watchArray.splice(i, 1);
+            this.watchArray.forEach(function(sticky, index, arr) {
+                if (sticky.node === node) {
+                    this._remove(index);
                 }
-            }
-
-            if (!this.watchArray.length) this.turnOff();
+            }, this);
         },
 
-        seppuku: function() {
-            for (var method in this) {
-                if (this.hasOwnProperty(method) && typeof method == 'function') {
-                    method = noop;
+        _seppuku: function() {
+            for (var key in this) {
+                if (typeof this[key] == 'function') {
+                    this[key] = noop;
                 }
             }
+        },
+
+        _remove: function(index) {
+            this.watchArray[index].turnOff();
+            this.watchArray.splice(index, 1);
+            if (!this.watchArray.length) this.turnOff();
         },
 
         _addListeners: function() {
             var _this = this;
-            win.addEventListener('scroll', _this._scrollListener = function() {
+
+            win.addEventListener('scroll', this._scrollListener = function() {
                 _this._onScroll();
             });
-            win.addEventListener('wheel', _this._wheelListener = function() {
+            win.addEventListener('wheel', this._wheelListener = function() {
                 _this._onWheel();
             });
 
             //watch for width changes
-            win.addEventListener('resize', _this._resizeListener = function() {
+            win.addEventListener('resize', this._resizeListener = function() {
                 _this.refresh();
             });
-            win.addEventListener('orientationchange', _this._orientationchangeListener = function() {
+            win.addEventListener('orientationchange', this._orientationchangeListener = function() {
                 _this.refresh();
             });
 
             //watch for page visibility
-            doc.addEventListener(visibilityChangeEventName, _this._visibilitychangeListener = function() {
+            doc.addEventListener(visibilityChangeEventName, this._visibilitychangeListener = function() {
                 _this._handlePageVisibilityChange();
             });
 
@@ -289,10 +291,78 @@
         this.stickyfill = stickyfill;
         this.node = node;
         this._turnedOn = false;
+        this._removed = false;
         this._getParams();
     }
 
     Sticky.prototype = {
+        turnOn: function() {
+            if (this._turnedOn) return;
+            if (this._removed) return;
+            if (isNaN(parseFloat(this._p.computed.top)) || this._isCell) return;
+
+            this._turnedOn = true;
+
+            if (!this._clone) this._makeClone();
+            if (this._p.parent.computed.position != 'absolute' &&
+                this._p.parent.computed.position != 'relative') this._p.parent.node.style.position = 'relative';
+
+            this._recalcMode();
+
+            //getting this stuff after clone is in place to prevent browser box model
+            //rounding errors to affect the calculations
+            this._p.parent.height = this._p.parent.node.offsetHeight;
+            this._p.docOffsetTop = getDocOffsetTop(this._clone);
+        },
+
+        turnOff: function() {
+            if (this._removed) return;
+            if (!this._turnedOn) return;
+
+            var _this = this,
+                deinitParent = true;
+
+            this._clone && this._killClone();
+            mergeObjects(this.node.style, this._p.css);
+
+            //check whether element's parent is used by other stickies
+            for (var i = this.stickyfill.watchArray.length - 1; i >= 0; i--) {
+                if (_this.stickyfill.watchArray[i].node !== _this.node && _this.stickyfill.watchArray[i]._p.parent.node === this._p.parent.node) {
+                    deinitParent = false;
+                    break;
+                }
+            };
+
+            if (deinitParent) this._p.parent.node.style.position = this._p.parent.css.position;
+            this._mode = -1;
+            this._turnedOn = false;
+        },
+
+        refresh: function() {
+            if (this._removed) return;
+
+            if (this._turnedOn) {
+                this.turnOff();
+                this._getParams();
+                this.turnOn();
+            }
+            else {
+                this._getParams();
+            }
+        },
+
+        remove: function() {
+            if (this._removed) return;
+
+            this.stickyfill.watchArray.every(function(sticky, index) {
+                if (sticky === this) {
+                    this.stickyfill._remove(index);
+                    this._removed = true;
+                    return false;
+                }
+            }, this);
+        },
+
         _getParams: function() {
             var node = this.node,
                 computedStyle = getComputedStyle(node),
@@ -378,51 +448,6 @@
                 end: parentOffset.doc.top + parentNode.offsetHeight - this._p.parent.numeric.borderBottomWidth -
                      node.offsetHeight - this._p.numeric.top - this._p.numeric.marginBottom
             };
-        },
-
-        turnOn: function() {
-            if (this._turnedOn) return;
-            if (isNaN(parseFloat(this._p.computed.top)) || this._isCell) return;
-
-            this._turnedOn = true;
-
-            if (!this._clone) this._makeClone();
-            if (this._p.parent.computed.position != 'absolute' &&
-                this._p.parent.computed.position != 'relative') this._p.parent.node.style.position = 'relative';
-
-            this._recalcMode();
-
-            //getting this stuff after clone is in place to prevent browser box model
-            //rounding errors to affect the calculations
-            this._p.parent.height = this._p.parent.node.offsetHeight;
-            this._p.docOffsetTop = getDocOffsetTop(this._clone);
-        },
-
-        turnOff: function() {
-            if (!this._turnedOn) return;
-            var _this = this,
-                deinitParent = true;
-
-            this._clone && this._killClone();
-            mergeObjects(this.node.style, this._p.css);
-
-            //check whether element's parent is used by other stickies
-            for (var i = this.stickyfill.watchArray.length - 1; i >= 0; i--) {
-                if (_this.stickyfill.watchArray[i].node !== _this.node && _this.stickyfill.watchArray[i]._p.parent.node === this._p.parent.node) {
-                    deinitParent = false;
-                    break;
-                }
-            };
-
-            if (deinitParent) this._p.parent.node.style.position = this._p.parent.css.position;
-            this._mode = -1;
-            this._turnedOn = false;
-        },
-
-        refresh: function() {
-            this.turnOff();
-            this._getParams();
-            this.turnOn();
         },
 
         _makeClone: function() {
