@@ -20,7 +20,6 @@ Check out [the demo](http://wd.dizaina.net/en/scripts/stickyfill/) and [use case
 ###What it doesn't
 
 - doesn't support left, right, bottom or combined stickies,
-- doesn't work in overflowed blocks,
 - doesn't parse your CSS! Launch it manually.
 
 ###Installation
