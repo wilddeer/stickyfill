@@ -1,4 +1,6 @@
-(function(doc, win) {
+(function(doc, _win) {
+    var win = document.getElementsByClassName("overflown")[0];
+
     var watchArray = [],
         scroll,
         initialized = false,
@@ -17,7 +19,7 @@
     }
 
     //test getComputedStyle
-    if (!win.getComputedStyle) {
+    if (!getComputedStyle) {
         seppuku();
     }
 
@@ -39,6 +41,7 @@
 
     //commit seppuku!
     function seppuku() {
+        console.log("commiting seppuku");
         init = add = rebuild = pause = stop = kill = noop;
     }
 
@@ -54,21 +57,23 @@
         return parseFloat(val) || 0;
     }
 
+    function getOffset() {
+        return {top: win.pageYOffset || win.scrollTop,
+                left: win.pageXOffset || win.scrollLeft};
+    }
+
     function updateScrollPos() {
-        scroll = {
-            top: win.pageYOffset,
-            left: win.pageXOffset
-        };
+        scroll = getOffset();
     }
 
     function onScroll() {
-        if (win.pageXOffset != scroll.left) {
+        if (getOffset().left != scroll.left) {
             updateScrollPos();
             rebuild();
             return;
         }
         
-        if (win.pageYOffset != scroll.top) {
+        if (getOffset().top != scroll.top) {
             updateScrollPos();
             recalcAllPos();
         }
@@ -77,8 +82,8 @@
     //fixes flickering
     function onWheel(event) {
         setTimeout(function() {
-            if (win.pageYOffset != scroll.top) {
-                scroll.top = win.pageYOffset;
+            if (getOffset().top != scroll.top) {
+                scroll.top = getOffset().top;
                 recalcAllPos();
             }
         }, 0);
@@ -329,8 +334,8 @@
 
             return {
                 doc: {
-                    top: box.top + win.pageYOffset,
-                    left: box.left + win.pageXOffset
+                    top: box.top + getOffset().top,
+                    left: box.left + getOffset().left
                 },
                 win: box
             };
@@ -445,7 +450,7 @@
     }
 
     //expose Stickyfill
-    win.Stickyfill = {
+    _win.Stickyfill = {
         stickies: watchArray,
         add: add,
         remove: remove,
