@@ -1,8 +1,6 @@
 (function(doc, _win) {
-    var win = document.getElementsByClassName("overflown")[0];
-
     var watchArray = [],
-        scroll,
+        boundingElements = [{node: _win}],
         initialized = false,
         html = doc.documentElement,
         noop = function() {},
@@ -41,12 +39,11 @@
 
     //commit seppuku!
     function seppuku() {
-        console.log("commiting seppuku");
         init = add = rebuild = pause = stop = kill = noop;
     }
 
     function mergeObjects(targetObj, sourceObject) {
-        for (key in sourceObject) {
+        for (var key in sourceObject) {
             if (sourceObject.hasOwnProperty(key)) {
                 targetObj[key] = sourceObject[key];
             }
@@ -57,23 +54,35 @@
         return parseFloat(val) || 0;
     }
 
-    function getOffset() {
-        return {top: win.pageYOffset || win.scrollTop,
-                left: win.pageXOffset || win.scrollLeft};
+    function getOffset(el) {
+        return {top: el.pageYOffset || el.scrollTop || 0,
+                left: el.pageXOffset || el.scrollLeft || 0};
     }
 
     function updateScrollPos() {
-        scroll = getOffset();
+        boundingElements = boundingElements.map(function (el) {
+            el.scroll = getOffset(el.node);
+            return el;
+        });
     }
 
-    function onScroll() {
-        if (getOffset().left != scroll.left) {
+    function getBoundingElement(el) {
+        return boundingElements.filter(function (b) {
+            return b.node == el;
+        })[0];
+    }
+
+    function onScroll(event) {
+        var el = event.currentTarget,
+            cached = getBoundingElement(el);
+
+        if (getOffset(el).left != cached.scroll.left) {
             updateScrollPos();
             rebuild();
             return;
         }
         
-        if (getOffset().top != scroll.top) {
+        if (getOffset(el).top != cached.scroll.top) {
             updateScrollPos();
             recalcAllPos();
         }
@@ -81,9 +90,12 @@
 
     //fixes flickering
     function onWheel(event) {
+        var el = event.currentTarget,
+            cached = getBoundingElement(el);
+
         setTimeout(function() {
-            if (getOffset().top != scroll.top) {
-                scroll.top = getOffset().top;
+            if (getOffset(el).top != cached.scroll.top) {
+                cached.scroll.top = getOffset(el).top;
                 recalcAllPos();
             }
         }, 0);
@@ -95,10 +107,25 @@
         }
     }
 
+    function getBoundingBox(node) {
+        if (node == window) {
+            return {
+                top: 0,
+                left: 0,
+                bottom: 0,
+                width: window.innerWidth || window.clientWidth,
+                height: window.innerHeight || window.clientHeight
+            };
+        }else{
+            return node.getBoundingClientRect();
+        }
+    }
+
     function recalcElementPos(el) {
         if (!el.inited) return;
 
-        var edge = scroll.top+win.getBoundingClientRect().top;
+        var boundingElement = findBoundingElement(el.node),
+            edge = boundingElement.scroll.top+getBoundingBox(boundingElement.node).top;
 
         var currentMode = (edge <= el.limit.start? 0: edge >= el.limit.end? 2: 1);
 
@@ -167,9 +194,7 @@
 
     function switchElementMode(el, mode) {
         var nodeStyle = el.node.style,
-            winBounds = win.getBoundingClientRect();
-
-        console.log(el);
+            winBounds = getBoundingBox(findBoundingElement(el.node).node);
 
         switch (mode) {
             case 0:
@@ -236,12 +261,29 @@
         el.clone = undefined;
     }
 
+    function findBoundingElement(node) {
+        if (node == document) {
+            node = window;
+        }
+
+        var el;
+        
+        for (var i = 0; i < boundingElements.length; i++) {
+            el = boundingElements[i];
+
+            if (el.node == node) {
+                return el;
+            }
+        }
+        
+        return findBoundingElement(node.parentNode);
+    }
+
     function getElementParams(node) {
         var computedStyle = getComputedStyle(node),
             parentNode = node.parentNode,
             parentComputedStyle = getComputedStyle(parentNode),
-            cachedPosition = node.style.position,
-            boundingBox = win.getBoundingClientRect();
+            cachedPosition = node.style.position;
 
         node.style.position = 'relative';
 
@@ -326,14 +368,17 @@
     }
 
     function getDocOffsetTop(node) {
-        var docOffsetTop = 0;
+        var docOffsetTop = 0, 
+            boundingBox = {top: 0};
 
         while (node) {
             docOffsetTop += node.offsetTop;
             node = node.offsetParent;
         }
 
-        var boundingBox = win.getBoundingClientRect();
+        if (node) {
+            boundingBox = getBoundingBox(findBoundingElement(node).node);
+        }
 
         return docOffsetTop+boundingBox.top;
     }
@@ -343,8 +388,8 @@
 
             return {
                 doc: {
-                    top: box.top + getOffset().top,
-                    left: box.left + getOffset().left
+                    top: box.top + getOffset(node).top,
+                    left: box.left + getOffset(node).left
                 },
                 win: box
             };
@@ -377,12 +422,14 @@
         updateScrollPos();
         initAll();
 
-        win.addEventListener('scroll', onScroll);
-        win.addEventListener('wheel', onWheel);
-
-        //watch for width changes
-        win.addEventListener('resize', rebuild);
-        win.addEventListener('orientationchange', rebuild);
+        boundingElements.map(function (el) {
+            el.node.addEventListener('scroll', onScroll);
+            el.node.addEventListener('wheel', onWheel);
+            
+            //watch for width changes
+            el.node.addEventListener('resize', rebuild);
+            el.node.addEventListener('orientationchange', rebuild);
+        });
 
         //watch for page visibility
         doc.addEventListener(visibilityChangeEventName, handlePageVisibilityChange);
@@ -405,10 +452,12 @@
     }
 
     function pause() {
-        win.removeEventListener('scroll', onScroll);
-        win.removeEventListener('wheel', onWheel);
-        win.removeEventListener('resize', rebuild);
-        win.removeEventListener('orientationchange', rebuild);
+        boundingElements.map(function (el) {
+            el.node.removeEventListener('scroll', onScroll);
+            el.node.removeEventListener('wheel', onWheel);
+            el.node.removeEventListener('resize', rebuild);
+            el.node.removeEventListener('orientationchange', rebuild);
+        });
         doc.removeEventListener(visibilityChangeEventName, handlePageVisibilityChange);
 
         stopFastCheckTimer();
