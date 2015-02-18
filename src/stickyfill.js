@@ -68,7 +68,7 @@
 
     function getBoundingElement(el) {
         return boundingElements.filter(function (b) {
-            return b.node == el;
+            return b.node === el;
         })[0];
     }
 
@@ -108,7 +108,7 @@
     }
 
     function getBoundingBox(node) {
-        if (node == window) {
+        if (node === window) {
             return {
                 top: 0,
                 left: 0,
@@ -480,6 +480,36 @@
         }
     }
 
+    function isOverflown(node) {
+        var computed = getComputedStyle(node),
+            overflows = ["auto", "scroll"];
+
+
+        return ["overflow", "overflow-y", "overflow-x"]
+            .map(function (key) {
+                return overflows.indexOf(computed[key]) > -1;
+            })
+            .indexOf(true) > -1;
+    }
+
+    function addBoundingElements(node) {
+        var parent = node.parentNode;
+
+        while (parent != document) {            
+            if (isOverflown(parent)) {
+                // only add once
+                for (var i = 0; i < boundingElements.length; i++) {
+                    if (boundingElements[i].node === parent) return;
+                }
+
+                boundingElements.push({node: parent,
+                                       scroll: getOffset(parent)});
+            }
+
+            parent = parent.parentNode;
+        }
+    }
+
     function add(node) {
         //check if Stickyfill is already applied to the node
         for (var i = watchArray.length - 1; i >= 0; i--) {
@@ -489,6 +519,7 @@
         var el = getElementParams(node);
 
         watchArray.push(el);
+        addBoundingElements(node);
 
         if (!initialized) {
             init();
