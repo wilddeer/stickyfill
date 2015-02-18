@@ -98,7 +98,9 @@
     function recalcElementPos(el) {
         if (!el.inited) return;
 
-        var currentMode = (scroll.top <= el.limit.start? 0: scroll.top >= el.limit.end? 2: 1);
+        var edge = scroll.top+win.getBoundingClientRect().top;
+
+        var currentMode = (edge <= el.limit.start? 0: edge >= el.limit.end? 2: 1);
 
         if (el.mode != currentMode) {
             switchElementMode(el, currentMode);
@@ -164,7 +166,10 @@
     }
 
     function switchElementMode(el, mode) {
-        var nodeStyle = el.node.style;
+        var nodeStyle = el.node.style,
+            winBounds = win.getBoundingClientRect();
+
+        console.log(el);
 
         switch (mode) {
             case 0:
@@ -183,9 +188,9 @@
                 nodeStyle.position = 'fixed';
                 nodeStyle.left = el.box.left + 'px';
                 nodeStyle.right = el.box.right + 'px';
-                nodeStyle.top = el.css.top;
+                nodeStyle.top = el.numeric.top + winBounds.top + 'px';
                 nodeStyle.bottom = 'auto';
-                nodeStyle.width = 'auto';
+                nodeStyle.width = el.computed.width;
                 nodeStyle.marginLeft = 0;
                 nodeStyle.marginRight = 0;
                 nodeStyle.marginTop = 0;
@@ -235,12 +240,14 @@
         var computedStyle = getComputedStyle(node),
             parentNode = node.parentNode,
             parentComputedStyle = getComputedStyle(parentNode),
-            cachedPosition = node.style.position;
+            cachedPosition = node.style.position,
+            boundingBox = win.getBoundingClientRect();
 
         node.style.position = 'relative';
 
         var computed = {
                 top: computedStyle.top,
+                width: computedStyle.width,
                 marginTop: computedStyle.marginTop,
                 marginBottom: computedStyle.marginBottom,
                 marginLeft: computedStyle.marginLeft,
@@ -326,7 +333,9 @@
             node = node.offsetParent;
         }
 
-        return docOffsetTop;
+        var boundingBox = win.getBoundingClientRect();
+
+        return docOffsetTop+boundingBox.top;
     }
 
     function getElementOffset(node) {
