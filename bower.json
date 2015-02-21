@@ -7,7 +7,7 @@
   ],
   "description": "`position: sticky` polyfill",
   "main": [
-    "dist/stickyfill.min.js"
+    "dist/stickyfill.js"
   ],
   "keywords": [
     "sticky",
