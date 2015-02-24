@@ -283,7 +283,9 @@
         var computedStyle = getComputedStyle(node),
             parentNode = node.parentNode,
             parentComputedStyle = getComputedStyle(parentNode),
-            cachedPosition = node.style.position;
+            cachedPosition = node.style.position,
+            boundingElement = findBoundingElement(node),
+            boundingOffset = getOffset(boundingElement.node);
 
         node.style.position = 'relative';
 
@@ -335,7 +337,7 @@
                     borderTopWidth: parseNumeric(parentComputedStyle.borderTopWidth),
                     borderBottomWidth: parseNumeric(parentComputedStyle.borderBottomWidth)
                 }
-            },
+            },        
 
             el = {
                 node: node,
@@ -358,9 +360,9 @@
                 inited: false,
                 parent: parent,
                 limit: {
-                    start: nodeOffset.doc.top - numeric.top,
+                    start: nodeOffset.doc.top - numeric.top + boundingOffset.top,
                     end: parentOffset.doc.top + parentNode.offsetHeight - parent.numeric.borderBottomWidth -
-                        node.offsetHeight - numeric.top - numeric.marginBottom
+                        node.offsetHeight - numeric.top - numeric.marginBottom + boundingOffset.top
                 }
             };
 
@@ -384,15 +386,15 @@
     }
 
     function getElementOffset(node) {
-        var box = node.getBoundingClientRect();
+        var box = getBoundingBox(node);
 
-            return {
-                doc: {
-                    top: box.top + getOffset(node).top,
-                    left: box.left + getOffset(node).left
-                },
-                win: box
-            };
+        return {
+            doc: {
+                top: box.top + getOffset(node).top,
+                left: box.left + getOffset(node).left
+            },
+            win: box
+        };
     }
 
     function startFastCheckTimer() {
@@ -447,7 +449,7 @@
         for (var i = watchArray.length - 1; i >= 0; i--) {
             watchArray[i] = getElementParams(watchArray[i].node);
         }
-        
+
         initAll();
     }
 
