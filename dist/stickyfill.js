@@ -1,6 +1,6 @@
 /*!
  * Stickyfill -- `position: sticky` polyfill
- * v. 1.1.1 | https://github.com/wilddeer/stickyfill
+ * v. 1.1.2 | https://github.com/wilddeer/stickyfill
  * Copyright Oleg Korsunsky | http://wd.dizaina.net/
  *
  * MIT License
@@ -50,7 +50,7 @@
     }
 
     function mergeObjects(targetObj, sourceObject) {
-        for (key in sourceObject) {
+        for (var key in sourceObject) {
             if (sourceObject.hasOwnProperty(key)) {
                 targetObj[key] = sourceObject[key];
             }
