@@ -1,3 +1,5 @@
+#v 2.0 is in early development, use [current version from master branch](https://github.com/wilddeer/stickyfill), lads!
+
 #`position: sticky` polyfill
 
 The most accurate sticky polyfill out in the wild.
