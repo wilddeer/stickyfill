@@ -127,7 +127,8 @@
 
         if (!el.clone) clone(el);
         if (el.parent.computed.position != 'absolute' &&
-            el.parent.computed.position != 'relative') el.parent.node.style.position = 'relative';
+            el.parent.computed.position != 'relative' &&
+            el.parent.tagName != 'BODY') el.parent.node.style.position = 'relative';
 
         recalcElementPos(el);
 
