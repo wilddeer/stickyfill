@@ -5,6 +5,13 @@
  *
  * MIT License
  */
+/*!
+ * Stickyfill -- `position: sticky` polyfill
+ * v. 1.1.2 | https://github.com/wilddeer/stickyfill
+ * Copyright Oleg Korsunsky | http://wd.dizaina.net/
+ *
+ * MIT License
+ */
 (function(doc, win) {
     var watchArray = [],
         scroll,
@@ -128,7 +135,10 @@
         if (!el.clone) clone(el);
         if (el.parent.computed.position != 'absolute' &&
             el.parent.computed.position != 'relative' &&
-            el.parent.tagName != 'BODY') el.parent.node.style.position = 'relative';
+            el.parent.tagName != 'BODY' &&
+            el.parent.tagName){
+						 	el.parent.node.style.position = 'relative';
+						}
 
         recalcElementPos(el);
 
@@ -240,7 +250,7 @@
             parentComputedStyle = getComputedStyle(parentNode),
             cachedPosition = node.style.position;
 
-        node.style.position = 'relative';
+				node.style.position = 'relative';
 
         var computed = {
                 top: computedStyle.top,
