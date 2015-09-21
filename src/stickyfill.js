@@ -1,12 +1,32 @@
-// This comes from a fork of the original: https://github.com/Swizec/stickyfill
-// Changes have been submitted upstream, but as of 19.2.2015 hadn't been merged yet
+//This fork of the original stickyfill (https://github.com/wilddeer/stickyfill) lib comes from
+// https://github.com/google/ggrc-core/blob/develop/src/ggrc/assets/vendor/javascripts/stickyfill.js
+//It has been converted to work as a module and several jshint warnings were removed.
+//Also of note: React rendering during testing uses a detached DOM node. This was causing issues with stickyfill
+//because in 2 places (lines 314 and 549) the DOM is traversed upwards until the document is reached. In a detached
+//DOM node, the document is never reached. In these instances I manually jump to the body to continue traversal.
 
-(function(doc, _win) {
+// Modified killClone to guard against the parent node not existing anymore - this is most likely a bandaid rather
+// than the proper solution, but it would seem to make sense that the clone's parent could be swooped from underneath
+// it because of React / Morearty.
+
+'use strict';
+
+module.exports = (function (doc, _win) {
+
+    if (!doc) {
+        doc = document;
+    }
+    if (!_win) {
+        _win = window;
+    }
+
+
     var watchArray = [],
         boundingElements = [{node: _win}],
         initialized = false,
         html = doc.documentElement,
-        noop = function() {},
+        noop = function () {
+        },
         checkTimer,
 
     //visibility API strings
@@ -30,7 +50,7 @@
     }
 
     //test getComputedStyle
-    if (!getComputedStyle) {
+    if (!_win.getComputedStyle) {
         seppuku();
     }
 
@@ -42,7 +62,8 @@
         try {
             block.style.position = prefixes[i] + 'sticky';
         }
-        catch(e) {}
+        catch (e) {
+        }
         if (block.style.position != '') {
             seppuku();
         }
@@ -68,8 +89,10 @@
     }
 
     function getOffset(el) {
-        return {top: el.pageYOffset || el.scrollTop || 0,
-            left: el.pageXOffset || el.scrollLeft || 0};
+        return {
+            top: el.pageYOffset || el.scrollTop || 0,
+            left: el.pageXOffset || el.scrollLeft || 0
+        };
     }
 
     function updateScrollPos() {
@@ -108,7 +131,7 @@
         var el = event.currentTarget,
             cached = getBoundingElement(el);
 
-        setTimeout(function() {
+        setTimeout(function () {
             if (getOffset(el).top != cached.scroll.top) {
                 cached.scroll.top = getOffset(el).top;
                 recalcAllPos();
@@ -131,7 +154,7 @@
                 width: window.innerWidth || window.clientWidth,
                 height: window.innerHeight || window.clientHeight
             };
-        }else{
+        } else {
             return node.getBoundingClientRect();
         }
     }
@@ -140,9 +163,9 @@
         if (!el.inited) return;
 
         var boundingElement = findBoundingElement(el.node),
-            edge = boundingElement.scroll.top+getBoundingBox(boundingElement.node).top;
+            edge = boundingElement.scroll.top + getBoundingBox(boundingElement.node).top;
 
-        var currentMode = (edge <= el.limit.start? 0: edge >= el.limit.end? 2: 1);
+        var currentMode = (edge <= el.limit.start ? 0 : edge >= el.limit.end ? 2 : 1);
 
         if (el.mode != currentMode) {
             switchElementMode(el, currentMode);
@@ -180,7 +203,9 @@
     function deinitElement(el) {
         var deinitParent = true;
 
-        el.clone && killClone(el);
+        if (el.clone) {
+            killClone(el);
+        }
         mergeObjects(el.node.style, el.css);
 
         //check whether element's parent is used by other stickies
@@ -189,7 +214,8 @@
                 deinitParent = false;
                 break;
             }
-        };
+        }
+        ;
 
         if (deinitParent) el.parent.node.style.position = el.parent.css.position;
         el.mode = -1;
@@ -272,7 +298,9 @@
     }
 
     function killClone(el) {
-        el.clone.parentNode.removeChild(el.clone);
+        if (el.clone.parentNode) {
+            el.clone.parentNode.removeChild(el.clone);
+        }
         el.clone = undefined;
     }
 
@@ -286,12 +314,13 @@
         for (var i = 0; i < boundingElements.length; i++) {
             el = boundingElements[i];
 
-            if (el.node == node) {
+            if (el.node === node) {
                 return el;
             }
         }
-
-        return findBoundingElement(node.parentNode);
+        //For React rendering during tests. React is rendering in a detached DOM node
+        //So during rendering we can land here without the proper path up to the document (a DIV with no parent)
+        return findBoundingElement(node.parentNode ? node.parentNode : document.getElementsByTagName('body')[0]);
     }
 
     function getElementParams(node) {
@@ -397,7 +426,7 @@
             boundingBox = getBoundingBox(findBoundingElement(node).node);
         }
 
-        return docOffsetTop+boundingBox.top;
+        return docOffsetTop + boundingBox.top;
     }
 
     function getElementOffset(node) {
@@ -413,8 +442,10 @@
     }
 
     function startFastCheckTimer() {
-        checkTimer = setInterval(function() {
-            !fastCheck() && rebuild();
+        checkTimer = setInterval(function () {
+            if (!fastCheck()) {
+                rebuild();
+            }
         }, 500);
     }
 
@@ -519,11 +550,14 @@
                     if (boundingElements[i].node === parent) return;
                 }
 
-                boundingElements.push({node: parent,
-                    scroll: getOffset(parent)});
+                boundingElements.push({
+                    node: parent,
+                    scroll: getOffset(parent)
+                });
             }
-
-            parent = parent.parentNode;
+            //For React rendering during tests. React is rendering in a detached DOM node
+            //So during rendering we can land here without the proper path up to the document (a DIV with no parent)
+            parent = parent.parentNode ? parent.parentNode : document.getElementsByTagName('body')[0];
         }
     }
 
@@ -531,7 +565,7 @@
         //check if Stickyfill is already applied to the node
         for (var i = watchArray.length - 1; i >= 0; i--) {
             if (watchArray[i].node === node) return;
-        };
+        }
 
         var el = getElementParams(node);
 
@@ -552,11 +586,13 @@
                 deinitElement(watchArray[i]);
                 watchArray.splice(i, 1);
             }
-        };
+        }
+        ;
     }
 
+
     //expose Stickyfill
-    _win.Stickyfill = {
+    var Stickyfill = {
         stickies: watchArray,
         add: add,
         remove: remove,
@@ -566,18 +602,18 @@
         stop: stop,
         kill: kill
     };
-})(document, window);
+    //if jQuery is available -- create a plugin
+    if (_win.jQuery) {
+        (function ($) {
+            $.fn.Stickyfill = function (options) {
+                this.each(function () {
+                    Stickyfill.add(this);
+                });
 
+                return this;
+            };
+        })(_win.jQuery);
+    }
+    return Stickyfill;
+});
 
-//if jQuery is available -- create a plugin
-if (window.jQuery) {
-    (function($) {
-        $.fn.Stickyfill = function(options) {
-            this.each(function() {
-                Stickyfill.add(this);
-            });
-
-            return this;
-        };
-    })(window.jQuery);
-}
