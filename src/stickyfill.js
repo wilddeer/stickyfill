@@ -1,14 +1,27 @@
-(function(doc, win) {
+// This comes from a fork of the original: https://github.com/Swizec/stickyfill
+// Changes have been submitted upstream, but as of 19.2.2015 hadn't been merged yet
+
+(function(doc, _win) {
     var watchArray = [],
-        scroll,
+        boundingElements = [{node: _win}],
         initialized = false,
         html = doc.documentElement,
         noop = function() {},
         checkTimer,
 
-        //visibility API strings
+    //visibility API strings
         hiddenPropertyName = 'hidden',
         visibilityChangeEventName = 'visibilitychange';
+
+    // This fixes an issue in Chrome on Mac Retina screens
+    // sticky elements have to be forcefully redrawn,
+    // otherwise they are there, but invisible
+    function forceRedraw(el) {
+        var display = el.node.style.display;
+        el.node.style.display = 'none';
+        el.node.offsetHeight; // this is important
+        el.node.style.display = display;
+    }
 
     //fallback to prefixed names in old webkit browsers
     if (doc.webkitHidden !== undefined) {
@@ -17,7 +30,7 @@
     }
 
     //test getComputedStyle
-    if (!win.getComputedStyle) {
+    if (!getComputedStyle) {
         seppuku();
     }
 
@@ -54,31 +67,50 @@
         return parseFloat(val) || 0;
     }
 
-    function updateScrollPos() {
-        scroll = {
-            top: win.pageYOffset,
-            left: win.pageXOffset
-        };
+    function getOffset(el) {
+        return {top: el.pageYOffset || el.scrollTop || 0,
+            left: el.pageXOffset || el.scrollLeft || 0};
     }
 
-    function onScroll() {
-        if (win.pageXOffset != scroll.left) {
+    function updateScrollPos() {
+        boundingElements = boundingElements.map(function (el) {
+            el.scroll = getOffset(el.node);
+            return el;
+        });
+    }
+
+    function getBoundingElement(el) {
+        return boundingElements.filter(function (b) {
+            return b.node === el;
+        })[0];
+    }
+
+    function onScroll(event) {
+        var el = event.currentTarget,
+            cached = getBoundingElement(el);
+
+        if (getOffset(el).left != cached.scroll.left) {
             updateScrollPos();
             rebuild();
             return;
         }
-        
-        if (win.pageYOffset != scroll.top) {
+
+        if (getOffset(el).top != cached.scroll.top) {
             updateScrollPos();
             recalcAllPos();
         }
+
+        watchArray.forEach(forceRedraw);
     }
 
     //fixes flickering
     function onWheel(event) {
+        var el = event.currentTarget,
+            cached = getBoundingElement(el);
+
         setTimeout(function() {
-            if (win.pageYOffset != scroll.top) {
-                scroll.top = win.pageYOffset;
+            if (getOffset(el).top != cached.scroll.top) {
+                cached.scroll.top = getOffset(el).top;
                 recalcAllPos();
             }
         }, 0);
@@ -90,10 +122,27 @@
         }
     }
 
+    function getBoundingBox(node) {
+        if (node === window) {
+            return {
+                top: 0,
+                left: 0,
+                bottom: 0,
+                width: window.innerWidth || window.clientWidth,
+                height: window.innerHeight || window.clientHeight
+            };
+        }else{
+            return node.getBoundingClientRect();
+        }
+    }
+
     function recalcElementPos(el) {
         if (!el.inited) return;
 
-        var currentMode = (scroll.top <= el.limit.start? 0: scroll.top >= el.limit.end? 2: 1);
+        var boundingElement = findBoundingElement(el.node),
+            edge = boundingElement.scroll.top+getBoundingBox(boundingElement.node).top;
+
+        var currentMode = (edge <= el.limit.start? 0: edge >= el.limit.end? 2: 1);
 
         if (el.mode != currentMode) {
             switchElementMode(el, currentMode);
@@ -159,7 +208,8 @@
     }
 
     function switchElementMode(el, mode) {
-        var nodeStyle = el.node.style;
+        var nodeStyle = el.node.style,
+            winBounds = getBoundingBox(findBoundingElement(el.node).node);
 
         switch (mode) {
             case 0:
@@ -178,9 +228,9 @@
                 nodeStyle.position = 'fixed';
                 nodeStyle.left = el.box.left + 'px';
                 nodeStyle.right = el.box.right + 'px';
-                nodeStyle.top = el.css.top;
+                nodeStyle.top = el.numeric.top + winBounds.top + 'px';
                 nodeStyle.bottom = 'auto';
-                nodeStyle.width = 'auto';
+                nodeStyle.width = el.computed.width;
                 nodeStyle.marginLeft = 0;
                 nodeStyle.marginRight = 0;
                 nodeStyle.marginTop = 0;
@@ -226,16 +276,37 @@
         el.clone = undefined;
     }
 
+    function findBoundingElement(node) {
+        if (node == document) {
+            node = window;
+        }
+
+        var el;
+
+        for (var i = 0; i < boundingElements.length; i++) {
+            el = boundingElements[i];
+
+            if (el.node == node) {
+                return el;
+            }
+        }
+
+        return findBoundingElement(node.parentNode);
+    }
+
     function getElementParams(node) {
         var computedStyle = getComputedStyle(node),
             parentNode = node.parentNode,
             parentComputedStyle = getComputedStyle(parentNode),
-            cachedPosition = node.style.position;
+            cachedPosition = node.style.position,
+            boundingElement = findBoundingElement(node),
+            boundingOffset = getOffset(boundingElement.node);
 
         node.style.position = 'relative';
 
         var computed = {
                 top: computedStyle.top,
+                width: computedStyle.width,
                 marginTop: computedStyle.marginTop,
                 marginBottom: computedStyle.marginBottom,
                 marginLeft: computedStyle.marginLeft,
@@ -266,7 +337,7 @@
             },
             nodeOffset = getElementOffset(node),
             parentOffset = getElementOffset(parentNode),
-            
+
             parent = {
                 node: parentNode,
                 css: {
@@ -304,9 +375,9 @@
                 inited: false,
                 parent: parent,
                 limit: {
-                    start: nodeOffset.doc.top - numeric.top,
+                    start: nodeOffset.doc.top - numeric.top + boundingOffset.top,
                     end: parentOffset.doc.top + parentNode.offsetHeight - parent.numeric.borderBottomWidth -
-                        node.offsetHeight - numeric.top - numeric.marginBottom
+                    node.offsetHeight - numeric.top - numeric.marginBottom + boundingOffset.top
                 }
             };
 
@@ -314,26 +385,31 @@
     }
 
     function getDocOffsetTop(node) {
-        var docOffsetTop = 0;
+        var docOffsetTop = 0,
+            boundingBox = {top: 0};
 
         while (node) {
             docOffsetTop += node.offsetTop;
             node = node.offsetParent;
         }
 
-        return docOffsetTop;
+        if (node) {
+            boundingBox = getBoundingBox(findBoundingElement(node).node);
+        }
+
+        return docOffsetTop+boundingBox.top;
     }
 
     function getElementOffset(node) {
-        var box = node.getBoundingClientRect();
+        var box = getBoundingBox(node);
 
-            return {
-                doc: {
-                    top: box.top + win.pageYOffset,
-                    left: box.left + win.pageXOffset
-                },
-                win: box
-            };
+        return {
+            doc: {
+                top: box.top + getOffset(node).top,
+                left: box.left + getOffset(node).left
+            },
+            win: box
+        };
     }
 
     function startFastCheckTimer() {
@@ -363,12 +439,14 @@
         updateScrollPos();
         initAll();
 
-        win.addEventListener('scroll', onScroll);
-        win.addEventListener('wheel', onWheel);
+        boundingElements.map(function (el) {
+            el.node.addEventListener('scroll', onScroll);
+            el.node.addEventListener('wheel', onWheel);
 
-        //watch for width changes
-        win.addEventListener('resize', rebuild);
-        win.addEventListener('orientationchange', rebuild);
+            //watch for width changes
+            el.node.addEventListener('resize', rebuild);
+            el.node.addEventListener('orientationchange', rebuild);
+        });
 
         //watch for page visibility
         doc.addEventListener(visibilityChangeEventName, handlePageVisibilityChange);
@@ -382,19 +460,21 @@
         if (!initialized) return;
 
         deinitAll();
-        
+
         for (var i = watchArray.length - 1; i >= 0; i--) {
             watchArray[i] = getElementParams(watchArray[i].node);
         }
-        
+
         initAll();
     }
 
     function pause() {
-        win.removeEventListener('scroll', onScroll);
-        win.removeEventListener('wheel', onWheel);
-        win.removeEventListener('resize', rebuild);
-        win.removeEventListener('orientationchange', rebuild);
+        boundingElements.map(function (el) {
+            el.node.removeEventListener('scroll', onScroll);
+            el.node.removeEventListener('wheel', onWheel);
+            el.node.removeEventListener('resize', rebuild);
+            el.node.removeEventListener('orientationchange', rebuild);
+        });
         doc.removeEventListener(visibilityChangeEventName, handlePageVisibilityChange);
 
         stopFastCheckTimer();
@@ -404,7 +484,7 @@
 
     function stop() {
         pause();
-        deinitAll(); 
+        deinitAll();
     }
 
     function kill() {
@@ -417,6 +497,36 @@
         }
     }
 
+    function isOverflown(node) {
+        var computed = getComputedStyle(node),
+            overflows = ["auto", "scroll"];
+
+
+        return ["overflow", "overflow-y", "overflow-x"]
+                .map(function (key) {
+                    return overflows.indexOf(computed[key]) > -1;
+                })
+                .indexOf(true) > -1;
+    }
+
+    function addBoundingElements(node) {
+        var parent = node.parentNode;
+
+        while (parent != document) {
+            if (isOverflown(parent)) {
+                // only add once
+                for (var i = 0; i < boundingElements.length; i++) {
+                    if (boundingElements[i].node === parent) return;
+                }
+
+                boundingElements.push({node: parent,
+                    scroll: getOffset(parent)});
+            }
+
+            parent = parent.parentNode;
+        }
+    }
+
     function add(node) {
         //check if Stickyfill is already applied to the node
         for (var i = watchArray.length - 1; i >= 0; i--) {
@@ -426,6 +536,7 @@
         var el = getElementParams(node);
 
         watchArray.push(el);
+        addBoundingElements(node);
 
         if (!initialized) {
             init();
@@ -445,7 +556,7 @@
     }
 
     //expose Stickyfill
-    win.Stickyfill = {
+    _win.Stickyfill = {
         stickies: watchArray,
         add: add,
         remove: remove,
