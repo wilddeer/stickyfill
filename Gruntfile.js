@@ -8,8 +8,7 @@ module.exports = function(grunt) {
 
         umd: {
             options: {
-                globalAlias: '<%= pkg.name %>',
-                indent: 4
+                globalAlias: '<%= pkg.name %>'
             },
             'default': {
                 src: 'src/stickyfill.js',
