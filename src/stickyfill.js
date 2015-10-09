@@ -114,7 +114,7 @@
     }
 
     function initElement(el) {
-        if (isNaN(parseFloat(el.computed.top)) || el.isCell) return;
+        if (isNaN(parseFloat(el.computed.top)) || el.isCell || el.computed.display == 'none') return;
 
         el.inited = true;
 
@@ -240,7 +240,8 @@
                 marginBottom: computedStyle.marginBottom,
                 marginLeft: computedStyle.marginLeft,
                 marginRight: computedStyle.marginRight,
-                cssFloat: computedStyle.cssFloat
+                cssFloat: computedStyle.cssFloat,
+                display: computedStyle.display
             },
             numeric = {
                 top: parseNumeric(computedStyle.top),
