@@ -1,6 +1,6 @@
 /*!
  * Stickyfill -- `position: sticky` polyfill
- * v. 1.1.2 | https://github.com/wilddeer/stickyfill
+ * v. 1.1.3 | https://github.com/wilddeer/stickyfill
  * Copyright Oleg Korsunsky | http://wd.dizaina.net/
  *
  * MIT License
@@ -121,7 +121,7 @@
     }
 
     function initElement(el) {
-        if (isNaN(parseFloat(el.computed.top)) || el.isCell) return;
+        if (isNaN(parseFloat(el.computed.top)) || el.isCell || el.computed.display == 'none') return;
 
         el.inited = true;
 
@@ -247,7 +247,8 @@
                 marginBottom: computedStyle.marginBottom,
                 marginLeft: computedStyle.marginLeft,
                 marginRight: computedStyle.marginRight,
-                cssFloat: computedStyle.cssFloat
+                cssFloat: computedStyle.cssFloat,
+                display: computedStyle.display
             },
             numeric = {
                 top: parseNumeric(computedStyle.top),
