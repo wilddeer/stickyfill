@@ -11,6 +11,7 @@
     "name": "Oleg Korsunsky",
     "url": "http://wd.dizaina.net/"
   },
+  "main": "dist/stickyfill.js",
   "devDependencies": {
     "grunt": "~0.4.1",
     "grunt-contrib-uglify": "~0.2.5",
