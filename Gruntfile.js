@@ -5,6 +5,17 @@ module.exports = function(grunt) {
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
         banner: '/*!\n * Stickyfill -- `position: sticky` polyfill\n * v. <%= pkg.version %> | <%= pkg.homepage %>\n * Copyright <%= pkg.author.name %> | <%= pkg.author.url %>\n *\n * MIT License\n */\n',
+
+        umd: {
+            options: {
+                globalAlias: '<%= pkg.name %>'
+            },
+            'default': {
+                src: 'src/stickyfill.js',
+                dest: '<%= pkg.main %>'
+            }
+        },
+
         uglify: {
             options: {
                 banner: '<%= banner %>',
@@ -14,7 +25,7 @@ module.exports = function(grunt) {
             },
             dist: {
                 files: {
-                    'dist/stickyfill.min.js': ['src/stickyfill.js']
+                    'dist/stickyfill.min.js': ['<%= pkg.main %>']
                 }
             }
         },
@@ -25,8 +36,8 @@ module.exports = function(grunt) {
                 separator: '\n'
             },
             dist: {
-                src: ['src/stickyfill.js'],
-                dest: 'dist/stickyfill.js'
+                src: ['<%= pkg.main %>'],
+                dest: '<%= pkg.main %>'
             }
         },
 
@@ -70,14 +81,16 @@ module.exports = function(grunt) {
     });
 
     // build
+    grunt.loadNpmTasks('grunt-umd');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-connect');
     grunt.loadNpmTasks('grunt-bump');
     grunt.loadNpmTasks('grunt-shell');
-    grunt.registerTask('build', ['uglify', 'concat']);
-    grunt.registerTask('release', ['bump-only:patch', 'uglify', 'concat', 'bump-commit', 'shell:push', 'shell:pushTags']);
+
+    grunt.registerTask('build', ['umd', 'concat', 'uglify']);
+    grunt.registerTask('release', ['bump-only:patch', 'uglify', 'umd', 'concat', 'bump-commit', 'shell:push', 'shell:pushTags']);
     grunt.registerTask('w', ['connect', 'build', 'watch']);
     grunt.registerTask('default', 'build');
 };
