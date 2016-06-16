@@ -74,7 +74,7 @@
             rebuild();
             return;
         }
-        
+
         if (win.pageYOffset != scroll.top) {
             updateScrollPos();
             recalcAllPos();
@@ -236,8 +236,14 @@
     function getElementParams(node) {
         var computedStyle = getComputedStyle(node),
             parentNode = node.parentNode,
-            parentComputedStyle = getComputedStyle(parentNode),
+            parentComputedStyle,
             cachedPosition = node.style.position;
+
+        if (parentNode.toString() === '[object ShadowRoot]') {
+            parentNode = parentNode.host;
+        }
+
+        parentComputedStyle = getComputedStyle(parentNode);
 
         node.style.position = 'relative';
 
@@ -274,7 +280,7 @@
             },
             nodeOffset = getElementOffset(node),
             parentOffset = getElementOffset(parentNode),
-            
+
             parent = {
                 node: parentNode,
                 css: {
@@ -390,11 +396,11 @@
         if (!initialized) return;
 
         deinitAll();
-        
+
         for (var i = watchArray.length - 1; i >= 0; i--) {
             watchArray[i] = getElementParams(watchArray[i].node);
         }
-        
+
         initAll();
     }
 
@@ -412,7 +418,7 @@
 
     function stop() {
         pause();
-        deinitAll(); 
+        deinitAll();
     }
 
     function kill() {
