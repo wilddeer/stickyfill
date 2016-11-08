@@ -1,4 +1,4 @@
-(function(doc, win) {
+module.exports = (function(doc, win) {
     var watchArray = [],
         scroll,
         initialized = false,
