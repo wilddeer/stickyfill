@@ -364,8 +364,8 @@
         updateScrollPos();
         initAll();
 
-        win.addEventListener('scroll', onScroll);
-        win.addEventListener('wheel', onWheel);
+        win.addEventListener('scroll', onScroll, { passive: true });
+        win.addEventListener('wheel', onWheel, { passive: true });
 
         //watch for width changes
         win.addEventListener('resize', rebuild);
