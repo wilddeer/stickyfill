@@ -6,6 +6,9 @@
  * MIT License
  */
 (function(doc, win) {
+	if (typeof doc === 'undefined' || typeof win === 'undefined') {
+		return;
+	}
     var watchArray = [],
         scroll,
         initialized = false,
