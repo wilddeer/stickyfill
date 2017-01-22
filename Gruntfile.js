@@ -58,16 +58,26 @@ module.exports = function(grunt) {
             files: ['src/**/*.js'],
             tasks: ['build']
         },
+
+        connect: {
+            server: {
+                options: {
+                    port: 8001,
+                    hostname: '*'
+                }
+            }
+        }
     });
 
     // build
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-watch');
+    grunt.loadNpmTasks('grunt-contrib-connect');
     grunt.loadNpmTasks('grunt-bump');
     grunt.loadNpmTasks('grunt-shell');
     grunt.registerTask('build', ['uglify', 'concat']);
     grunt.registerTask('release', ['bump-only:patch', 'uglify', 'concat', 'bump-commit', 'shell:push', 'shell:pushTags']);
-    grunt.registerTask('w', ['build', 'watch']);
+    grunt.registerTask('w', ['connect', 'build', 'watch']);
     grunt.registerTask('default', 'build');
 };
