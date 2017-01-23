@@ -240,7 +240,7 @@ class Sticky {
                     position: 'fixed',
                     left: this._winOffset.left + 'px',
                     right: this._winOffset.right + 'px',
-                    top: this.styles.top,
+                    top: this._styles.top,
                     bottom: 'auto',
                     width: 'auto',
                     marginLeft: 0,
@@ -281,12 +281,12 @@ class Sticky {
         this._clone.parentNode.removeChild(this._clone);
         delete this._clone;
 
-        merge(this._node.style, this._styles);
+        extend(this._node.style, this._styles);
 
         // Check whether element’s parent node is used by other stickies.
         // If not, restore parent node’s styles.
-        if (!stickies.some(sticky => sticky !== this && sticky._parent.node === this._parent.node))
-            merge(this._parent.node.style, this._parent.styles);
+        if (!stickies.some(sticky => sticky !== this && sticky._parent && sticky._parent.node === this._parent.node))
+            extend(this._parent.node.style, this._parent.styles);
 
         this._stickyMode = null;
         this._active = false;
@@ -313,7 +313,7 @@ const Stickyfill = {
 
         const addedStickies = [];
 
-        for (let i = 0; i < nodeList.length 1; i++) {
+        for (let i = 0; i < nodeList.length; i++) {
             let node = nodeList[i];
             if (!(node instanceof HTMLElement)) continue;
 
@@ -348,6 +348,10 @@ const Stickyfill = {
         stickies.forEach(sticky => sticky.kill());
     }
 };
+
+function recalcAll() {
+    stickies.forEach(sticky => sticky._recalcPosition());
+}
 
 function init() {
     /*
