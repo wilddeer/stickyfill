@@ -84,11 +84,11 @@ Check out [the test page](http://wilddeer.github.io/stickyfill/test/) to underst
 
 ### `Stickyfill.add(nodeList)`
 
-Accepts a [NodeList](https://developer.mozilla.org/en/docs/Web/API/NodeList), jQuery collection or any other iterable list of HTML elements. Adds elements from the list as stickies. Returns an array of created [Sticky](#Stickyfill.Sticky) instances.
+Accepts a [NodeList](https://developer.mozilla.org/en/docs/Web/API/NodeList), jQuery collection or any other iterable list of HTML elements. Adds elements from the list as stickies. Returns an array of created [Sticky](#stickyfillsticky) instances.
 
 ### `Stickyfill.addOne(node)`
 
-Adds and element as a sticky. Returns an instance of `Stickyfill.Sticky`.
+Adds and element as a sticky. Returns created [Sticky](#stickyfillsticky) instance.
 
 ### `Stickyfill.remove(nodeList)`
 
