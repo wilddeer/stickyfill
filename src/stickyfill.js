@@ -1,43 +1,45 @@
 /*
- * Check if the browser supports `position: sticky` natively or is too old to run the polyfill.
- * If one of these is the case, key features of the polyfill are disabled, but the API remains
- * functional to avoid breaking things.
+ * 1. Check if the browser supports `position: sticky` natively or is too old to run the polyfill.
+ *    If either of these is the case set `seppuku` flag. It will be checked later to disable key features
+ *    of the polyfill, but the API will remain functional to avoid breaking things.
  */
 let seppuku = false;
 
-// If `getComputedStyle` is not supported
+// The polyfill cant’t function properly without `getComputedStyle`.
 if (!window.getComputedStyle) seppuku = true;
-// Dont’t get in a way if the browser supports
+// Dont’t get in a way if the browser supports `position: sticky` natively.
 else {
-    const prefixes = ['', '-webkit-', '-moz-', '-ms-'];
     const testNode = document.createElement('div');
 
-    seppuku = prefixes.some(prefix => {
-        try {
-            testNode.style.position = prefix + 'sticky';
-        }
-        catch(e) {}
+    if (
+        ['', '-webkit-', '-moz-', '-ms-'].some(prefix => {
+            try {
+                testNode.style.position = prefix + 'sticky';
+            }
+            catch(e) {}
 
-        return (testNode.style.position != '');
-    });
+            return testNode.style.position != '';
+        })
+    ) seppuku = true;
 }
 
+
 /*
- * 2. “Global” vars used both in Sticky class and Sti
+ * 2. “Global” vars used across the polyfill
  */
+
+// Last saved scroll position
 const scroll = {
     top: null,
-    left: null,
-    update() {
-        this.top = window.pageYOffset;
-        this.left = window.pageXOffset;
-    }
+    left: null
 };
 
+// Array of created Sticky instances
 const stickies = [];
 
+
 /*
- * 1. Utility functions
+ * 3. Utility functions
  */
 function extend(targetObj, sourceObject) {
     for (var key in sourceObject) {
@@ -63,7 +65,9 @@ function getDocOffsetTop(node) {
 }
 
 
-
+/*
+ * 4. Sticky class
+ */
 class Sticky {
     constructor(node) {
         if (!(node instanceof HTMLElement))
@@ -103,60 +107,28 @@ class Sticky {
          * 2. Get necessary node parameters
          */
         const parentNode = node.parentNode;
-        const cachedPosition = node.style.position;
         const nodeWinOffset = node.getBoundingClientRect();
         const parentWinOffset = parentNode.getBoundingClientRect();
-
-        node.style.position = 'relative';
-
-        this._computedStyles = {
-            top: nodeComputedStyle.top,
-            marginTop: nodeComputedStyle.marginTop,
-            marginBottom: nodeComputedStyle.marginBottom,
-            marginLeft: nodeComputedStyle.marginLeft,
-            marginRight: nodeComputedStyle.marginRight,
-            cssFloat: nodeComputedStyle.cssFloat,
-            display: nodeComputedStyle.display
-        };
-        this._numericValues = {
-            top: parseNumeric(nodeComputedStyle.top),
-            marginBottom: parseNumeric(nodeComputedStyle.marginBottom),
-            paddingLeft: parseNumeric(nodeComputedStyle.paddingLeft),
-            paddingRight: parseNumeric(nodeComputedStyle.paddingRight),
-            borderLeftWidth: parseNumeric(nodeComputedStyle.borderLeftWidth),
-            borderRightWidth: parseNumeric(nodeComputedStyle.borderRightWidth)
-        };
-
-        node.style.position = cachedPosition;
-
         const parentComputedStyle = getComputedStyle(parentNode);
+
         this._parent = {
             node: parentNode,
             styles: {
                 position: parentNode.style.position
             },
-            computedStyles: {
-                position: parentComputedStyle.position
-            },
-            numericValues: {
-                borderLeftWidth: parseNumeric(parentComputedStyle.borderLeftWidth),
-                borderRightWidth: parseNumeric(parentComputedStyle.borderRightWidth),
-                borderTopWidth: parseNumeric(parentComputedStyle.borderTopWidth),
-                borderBottomWidth: parseNumeric(parentComputedStyle.borderBottomWidth)
-            },
-            height: parentNode.offsetHeight
+            offsetHeight: parentNode.offsetHeight
         };
         this._winOffset = {
             left: nodeWinOffset.left,
             right: document.documentElement.clientWidth - nodeWinOffset.right
         };
         this._docOffset = {
-            top: nodeWinOffset.top - parentWinOffset.top - this._parent.numericValues.borderTopWidth,
-            left: nodeWinOffset.left - parentWinOffset.left - this._parent.numericValues.borderLeftWidth,
-            right: -nodeWinOffset.right + parentWinOffset.right - this._parent.numericValues.borderRightWidth
+            top: nodeWinOffset.top - parentWinOffset.top - parseNumeric(parentComputedStyle.borderTopWidth),
+            left: nodeWinOffset.left - parentWinOffset.left - parseNumeric(parentComputedStyle.borderLeftWidth),
+            right: -nodeWinOffset.right + parentWinOffset.right - parseNumeric(parentComputedStyle.borderRightWidth)
         };
         this._styles = {
-            position: cachedPosition,
+            position: node.style.position,
             top: node.style.top,
             bottom: node.style.bottom,
             left: node.style.left,
@@ -167,47 +139,49 @@ class Sticky {
             marginRight: node.style.marginRight
         };
 
-        this._width = nodeWinOffset.right - nodeWinOffset.left;
-        this._height = nodeWinOffset.bottom - nodeWinOffset.top;
+        const nodeTopValue = parseNumeric(nodeComputedStyle.top);
         this._limits = {
-            start: nodeWinOffset.top + window.pageYOffset - this._numericValues.top,
+            start: nodeWinOffset.top + window.pageYOffset - nodeTopValue,
             end: parentWinOffset.top + window.pageYOffset + parentNode.offsetHeight -
-                this._parent.numericValues.borderBottomWidth - node.offsetHeight -
-                this._numericValues.top - this._numericValues.marginBottom
+                parseNumeric(parentComputedStyle.borderBottomWidth) - node.offsetHeight -
+                nodeTopValue - parseNumeric(nodeComputedStyle.marginBottom)
         };
 
         /*
          * 3. Create a clone
          */
-        this._clone = document.createElement('div');
+        const clone = this._clone = {};
 
+        clone.node = document.createElement('div');
         // Apply styles to the clone
-        extend(this._clone.style, {
-            height: this._height + 'px',
-            width: this._width + 'px',
-            marginTop: this._computedStyles.marginTop,
-            marginBottom: this._computedStyles.marginBottom,
-            marginLeft: this._computedStyles.marginLeft,
-            marginRight: this._computedStyles.marginRight,
+        extend(clone.node.style, {
+            width: nodeWinOffset.right - nodeWinOffset.left + 'px',
+            height: nodeWinOffset.bottom - nodeWinOffset.top + 'px',
+            marginTop: nodeComputedStyle.marginTop,
+            marginBottom: nodeComputedStyle.marginBottom,
+            marginLeft: nodeComputedStyle.marginLeft,
+            marginRight: nodeComputedStyle.marginRight,
+            cssFloat: nodeComputedStyle.cssFloat,
             padding: 0,
             border: 0,
             borderSpacing: 0,
             fontSize: '1em',
-            position: 'static',
-            cssFloat: this._computedStyles.cssFloat
+            position: 'static'
         });
 
-        this._parent.node.appendChild(this._clone);
-        this._cloneOffsetTop = getDocOffsetTop(this._clone);
+        parentNode.insertBefore(clone.node, node);
+        clone.docOffsetTop = getDocOffsetTop(clone.node);
 
         /*
          * 4. Ensure that the node will be positioned relatively to the parent node
          */
+        const parentPosition = parentComputedStyle.position;
+
         if (
-            this._parent.computedStyles.position != 'absolute' &&
-            this._parent.computedStyles.position != 'relative'
+            parentPosition != 'absolute' &&
+            parentPosition != 'relative'
         ) {
-            this._parent.node.style.position = 'relative';
+            parentNode.style.position = 'relative';
         }
 
         this._recalcPosition();
@@ -269,8 +243,8 @@ class Sticky {
     _fastCheck() {
         if (!this._active) return true;
 
-        if (Math.abs(getDocOffsetTop(this._clone) - this._cloneOffsetTop) >= 2) return false;
-        if (Math.abs(this._parent.node.offsetHeight - this._parent.height) >= 2) return false;
+        if (Math.abs(getDocOffsetTop(this._clone.node) - this._clone.docOffsetTop) >= 2) return false;
+        if (Math.abs(this._parent.node.offsetHeight - this._parent.offsetHeight) >= 2) return false;
 
         return true;
     }
@@ -278,35 +252,47 @@ class Sticky {
     _deactivate() {
         if (!this._active) return;
 
-        this._clone.parentNode.removeChild(this._clone);
+        this._clone.node.parentNode.removeChild(this._clone.node);
         delete this._clone;
 
         extend(this._node.style, this._styles);
+        delete this._styles;
 
         // Check whether element’s parent node is used by other stickies.
         // If not, restore parent node’s styles.
-        if (!stickies.some(sticky => sticky !== this && sticky._parent && sticky._parent.node === this._parent.node))
+        if (!stickies.some(sticky => sticky !== this && sticky._parent && sticky._parent.node === this._parent.node)) {
             extend(this._parent.node.style, this._parent.styles);
+        }
+        delete this._parent;
 
         this._stickyMode = null;
         this._active = false;
+
+        delete this._winOffset;
+        delete this._docOffset;
+        delete this._limits;
     }
 
     kill() {
         this._deactivate();
 
-        stickies.every((sticky, index) => {
+        stickies.some((sticky, index) => {
             if (sticky._node === this._node) {
                 stickies.splice(index, 1);
-                return false;
+                return true;
             }
         });
     }
 }
 
+
+/*
+ * 5. Stickyfill API
+ */
 const Stickyfill = {
     stickies,
     Sticky,
+
     add(nodeList) {
         if (nodeList instanceof HTMLElement) nodeList = [nodeList];
         if (!nodeList[0] || !nodeList.length) return;
@@ -324,6 +310,7 @@ const Stickyfill = {
 
         return addedStickies;
     },
+
     addOne(node) {
         if (node[0]) node = node[0];
         if (!(node instanceof HTMLElement)) return;
@@ -333,6 +320,7 @@ const Stickyfill = {
 
         return new Sticky(node);
     },
+
     remove(node) {
         stickies.some((sticky, index) => {
             if (sticky._node === node) {
@@ -341,95 +329,94 @@ const Stickyfill = {
             }
         });
     },
+
     refreshAll() {
         stickies.forEach(sticky => sticky.refresh());
     },
+
     removeAll() {
-        stickies.forEach(sticky => sticky.kill());
+        while (stickies.length) stickies[0].kill();
     }
 };
 
-function recalcAll() {
-    stickies.forEach(sticky => sticky._recalcPosition());
-}
 
+/*
+ * 6. Setup events (unless the polyfill was disabled)
+ */
 function init() {
-    /*
-     * 1. Check scroll position and trigger recalc/refresh if needed
-     */
+    // Watch for scroll position changes and trigger recalc/refresh if needed
     function checkScroll() {
         if (window.pageXOffset != scroll.left) {
-            scroll.update();
+            scroll.top = window.pageYOffset;
+            scroll.left = window.pageXOffset;
+
             Stickyfill.refreshAll();
         }
         else if (window.pageYOffset != scroll.top) {
-            scroll.update();
-            recalcAll();
+            scroll.top = window.pageYOffset;
+            scroll.left = window.pageXOffset;
+
+            // recalc position for all stickies
+            stickies.forEach(sticky => sticky._recalcPosition());
         }
     }
+
     checkScroll();
-
     window.addEventListener('scroll', checkScroll);
-    window.addEventListener('wheel', () => {
-        setTimeout(checkScroll, 0);
-    });
 
-    /*
-     * 2. Watch for resizes and trigger refresh
-     */
+    // Watch for window resizes and device orientation cahnges and trigger refresh
     window.addEventListener('resize', Stickyfill.refreshAll);
     window.addEventListener('orientationchange', Stickyfill.refreshAll);
 
-    /*
-     * 3. Fast dirty check for layout changes every 500ms
-     */
-    let fastCheckTimer;
+    // Fast dirty check for layout changes every 500ms
+    // let fastCheckTimer;
 
-    function fastCheck() {
-        return stickies.every(sticky => sticky._fastCheck());
-    }
+    // function fastCheck() {
+    //     return stickies.every(sticky => sticky._fastCheck());
+    // }
 
-    function startFastCheckTimer() {
-        fastCheckTimer = setInterval(function() {
-            if (!fastCheck()) Stickyfill.refreshAll();
-        }, 500);
-    }
+    // function startFastCheckTimer() {
+    //     fastCheckTimer = setInterval(function() {
+    //         if (!fastCheck()) Stickyfill.refreshAll();
+    //     }, 500);
+    // }
 
-    function stopFastCheckTimer() {
-        clearInterval(fastCheckTimer);
-    }
+    // function stopFastCheckTimer() {
+    //     clearInterval(fastCheckTimer);
+    // }
 
-    let docHiddenKey;
-    let visibilityChangeEventName;
+    // let docHiddenKey;
+    // let visibilityChangeEventName;
 
-    if ('hidden' in document) {
-        docHiddenKey = 'hidden';
-        visibilityChangeEventName = 'visibilitychange';
-    }
-    else if ('webkitHidden' in document) {
-        docHiddenKey = 'webkitHidden';
-        visibilityChangeEventName = 'webkitvisibilitychange';
-    }
+    // if ('hidden' in document) {
+    //     docHiddenKey = 'hidden';
+    //     visibilityChangeEventName = 'visibilitychange';
+    // }
+    // else if ('webkitHidden' in document) {
+    //     docHiddenKey = 'webkitHidden';
+    //     visibilityChangeEventName = 'webkitvisibilitychange';
+    // }
 
-    if (visibilityChangeEventName) {
-        if (!document[docHiddenKey]) startFastCheckTimer();
+    // if (visibilityChangeEventName) {
+    //     if (!document[docHiddenKey]) startFastCheckTimer();
 
-        document.addEventListener(visibilityChangeEventName, () => {
-            if (document[docHiddenKey]) {
-                stopFastCheckTimer();
-            }
-            else {
-                startFastCheckTimer();
-            }
-        });
-    }
-    else startFastCheckTimer();
+    //     document.addEventListener(visibilityChangeEventName, () => {
+    //         if (document[docHiddenKey]) {
+    //             stopFastCheckTimer();
+    //         }
+    //         else {
+    //             startFastCheckTimer();
+    //         }
+    //     });
+    // }
+    // else startFastCheckTimer();
 }
 
 if (!seppuku) init();
 
+
 /*
- * 4. Expose Stickyfill
+ * 7. Expose Stickyfill
  */
 if (typeof(module) != 'undefined' && module.exports) {
     module.exports = Stickyfill;
