@@ -84,23 +84,19 @@ Check out [the test page](http://wilddeer.github.io/stickyfill/test/) to underst
 
 ### `Stickyfill.add(nodeList)`
 
-_nodeList_ – [NodeList](https://developer.mozilla.org/en/docs/Web/API/NodeList), jQuery collection or any other iterable list of HTML elements.
-
-Adds elements from the list as stickies. Returns an array of created stickies.
+Accepts a [NodeList](https://developer.mozilla.org/en/docs/Web/API/NodeList), jQuery collection or any other iterable list of HTML elements. Adds elements from the list as stickies. Returns an array of created [Sticky](#Stickyfill.Sticky) instances.
 
 ### `Stickyfill.addOne(node)`
-
-_node_ – HTML element.
 
 Adds and element as a sticky. Returns an instance of `Stickyfill.Sticky`.
 
 ### `Stickyfill.remove(nodeList)`
 
-Remove stickies.
+Accepts a [NodeList](https://developer.mozilla.org/en/docs/Web/API/NodeList), jQuery collection or any other iterable list of HTML elements. Removes stickies bound to the elements from the list.
 
-### `Stickyfill.removeOne(nodeList)`
+### `Stickyfill.removeOne(node)`
 
-Removes a sticky.
+Removes a sticky bound to the HTML element.
 
 ### `Stickyfill.removeAll()`
 
@@ -108,19 +104,33 @@ Removes all stickies.
 
 ### `Stickyfill.refreshAll()`
 
-Recalc all metrics and update stickies' positions.
+Refreshes all stickies, updates their parameters and positions.
 
-Call it after layout changes. Launches automatically after window resizes and device orientations changes.
+Call it after layout changes in case automatic layout change detecdtion doesn’t trigger in your case.
+
+All stickies are automatically refreshed after window resizes and device orientations changes.
 
 ### `Stickyfill.stickies`
 
-Array of added stickies.
+Array of created [Sticky](#Stickyfill.Sticky) instances.
 
 ### `Stickyfill.Sticky`
 
+Sticky class. You can call it directly:
+
+```js
+const sticky = new Stickyfill.Sticky(node);
+```
+
+It will throw an error if there’s a sticky bound to the passed node.
+
 ### `Sticky.refresh()`
 
+Refreshes the sticky, updates its parameters and position.
+
 ### `Sticky.remove()`
+
+Removes the sticky.
 
 
 ## Using Stickyfill?
