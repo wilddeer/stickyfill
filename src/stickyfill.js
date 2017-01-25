@@ -148,7 +148,19 @@ class Sticky {
         };
 
         /*
-         * 3. Create a clone
+         * 3. Ensure that the node will be positioned relatively to the parent node
+         */
+        const parentPosition = parentComputedStyle.position;
+
+        if (
+            parentPosition != 'absolute' &&
+            parentPosition != 'relative'
+        ) {
+            parentNode.style.position = 'relative';
+        }
+
+        /*
+         * 4. Create a clone
          */
         const clone = this._clone = {};
 
@@ -171,18 +183,6 @@ class Sticky {
 
         parentNode.insertBefore(clone.node, node);
         clone.docOffsetTop = getDocOffsetTop(clone.node);
-
-        /*
-         * 4. Ensure that the node will be positioned relatively to the parent node
-         */
-        const parentPosition = parentComputedStyle.position;
-
-        if (
-            parentPosition != 'absolute' &&
-            parentPosition != 'relative'
-        ) {
-            parentNode.style.position = 'relative';
-        }
 
         this._recalcPosition();
     }
@@ -241,12 +241,12 @@ class Sticky {
     }
 
     _fastCheck() {
-        if (!this._active) return true;
+        if (!this._active) return;
 
-        if (Math.abs(getDocOffsetTop(this._clone.node) - this._clone.docOffsetTop) >= 2) return false;
-        if (Math.abs(this._parent.node.offsetHeight - this._parent.offsetHeight) >= 2) return false;
-
-        return true;
+        if (
+            Math.abs(getDocOffsetTop(this._clone.node) - this._clone.docOffsetTop) > 1 ||
+            Math.abs(this._parent.node.offsetHeight - this._parent.offsetHeight) > 1
+        ) this.refresh();
     }
 
     _deactivate() {
@@ -368,48 +368,44 @@ function init() {
     window.addEventListener('resize', Stickyfill.refreshAll);
     window.addEventListener('orientationchange', Stickyfill.refreshAll);
 
-    // Fast dirty check for layout changes every 500ms
-    // let fastCheckTimer;
+    //Fast dirty check for layout changes every 500ms
+    let fastCheckTimer;
 
-    // function fastCheck() {
-    //     return stickies.every(sticky => sticky._fastCheck());
-    // }
+    function startFastCheckTimer() {
+        fastCheckTimer = setInterval(function() {
+            stickies.forEach(sticky => sticky._fastCheck());
+        }, 500);
+    }
 
-    // function startFastCheckTimer() {
-    //     fastCheckTimer = setInterval(function() {
-    //         if (!fastCheck()) Stickyfill.refreshAll();
-    //     }, 500);
-    // }
+    function stopFastCheckTimer() {
+        clearInterval(fastCheckTimer);
+    }
 
-    // function stopFastCheckTimer() {
-    //     clearInterval(fastCheckTimer);
-    // }
+    let docHiddenKey;
+    let visibilityChangeEventName;
 
-    // let docHiddenKey;
-    // let visibilityChangeEventName;
+    if ('hidden' in document) {
+        docHiddenKey = 'hidden';
+        visibilityChangeEventName = 'visibilitychange';
+    }
+    else if ('webkitHidden' in document) {
+        docHiddenKey = 'webkitHidden';
+        visibilityChangeEventName = 'webkitvisibilitychange';
+    }
 
-    // if ('hidden' in document) {
-    //     docHiddenKey = 'hidden';
-    //     visibilityChangeEventName = 'visibilitychange';
-    // }
-    // else if ('webkitHidden' in document) {
-    //     docHiddenKey = 'webkitHidden';
-    //     visibilityChangeEventName = 'webkitvisibilitychange';
-    // }
+    if (visibilityChangeEventName) {
+        if (!document[docHiddenKey]) startFastCheckTimer();
 
-    // if (visibilityChangeEventName) {
-    //     if (!document[docHiddenKey]) startFastCheckTimer();
-
-    //     document.addEventListener(visibilityChangeEventName, () => {
-    //         if (document[docHiddenKey]) {
-    //             stopFastCheckTimer();
-    //         }
-    //         else {
-    //             startFastCheckTimer();
-    //         }
-    //     });
-    // }
-    // else startFastCheckTimer();
+        document.addEventListener(visibilityChangeEventName, () => {
+            if (document[docHiddenKey]) {
+                stopFastCheckTimer();
+            }
+            else {
+                startFastCheckTimer();
+            }
+        });
+    }
+    else startFastCheckTimer();
 }
 
 if (!seppuku) init();
