@@ -82,27 +82,29 @@ Check out [the test page](http://wilddeer.github.io/stickyfill/test/) to underst
 
 ## API
 
-### `Stickyfill.add(nodeList)`
+### `Stickyfill`
+
+#### `Stickyfill.add(nodeList)`
 
 Accepts a [NodeList](https://developer.mozilla.org/en/docs/Web/API/NodeList), jQuery collection or any other iterable list of HTML elements. Adds elements from the list as stickies. Returns an array of created [Sticky](#stickyfillsticky) instances.
 
-### `Stickyfill.addOne(node)`
+#### `Stickyfill.addOne(node)`
 
 Adds and element as a sticky. Returns created [Sticky](#stickyfillsticky) instance.
 
-### `Stickyfill.remove(nodeList)`
+#### `Stickyfill.remove(nodeList)`
 
 Accepts a [NodeList](https://developer.mozilla.org/en/docs/Web/API/NodeList), jQuery collection or any other iterable list of HTML elements. Removes stickies bound to the elements from the list.
 
-### `Stickyfill.removeOne(node)`
+#### `Stickyfill.removeOne(node)`
 
 Removes a sticky bound to the HTML element.
 
-### `Stickyfill.removeAll()`
+#### `Stickyfill.removeAll()`
 
 Removes all stickies.
 
-### `Stickyfill.refreshAll()`
+#### `Stickyfill.refreshAll()`
 
 Refreshes all stickies, updates their parameters and positions.
 
@@ -110,7 +112,7 @@ Call it after layout changes in case automatic layout change detecdtion doesn’
 
 All stickies are automatically refreshed after window resizes and device orientations changes.
 
-### `Stickyfill.stickies`
+#### `Stickyfill.stickies`
 
 Array of created [Sticky](#Stickyfill.Sticky) instances.
 
@@ -124,11 +126,11 @@ const sticky = new Stickyfill.Sticky(node);
 
 It will throw an error if there’s a sticky bound to the passed node.
 
-### `Sticky.refresh()`
+#### `Sticky.refresh()`
 
 Refreshes the sticky, updates its parameters and position.
 
-### `Sticky.remove()`
+#### `Sticky.remove()`
 
 Removes the sticky.
 
