@@ -1,12 +1,12 @@
 # v 2.0 is in early development, use [current version from master branch](https://github.com/wilddeer/stickyfill), lads!
 
-# `position: sticky` polyfill
+# Polyfill for CSS `position: sticky`
 
 The most accurate sticky polyfill out in the wild.
 
 Check out [the demo](http://wd.dizaina.net/en/scripts/stickyfill/) and [use cases test page](http://wilddeer.github.io/stickyfill/test/).
 
-### What it does
+## What it does
 
 - supports top-positioned stickies,
 - works in IE9+,
@@ -19,13 +19,13 @@ Check out [the demo](http://wd.dizaina.net/en/scripts/stickyfill/) and [use case
 	- mimics native `top` and `margin-bottom` behavior,
 	- ~~works with table cells~~ disabled until Firefox [makes a native implementation](https://bugzilla.mozilla.org/show_bug.cgi?id=975644)
 
-### What it doesn't
+## What it doesn't
 
 - doesn't support left, right, bottom or combined stickies,
 - doesn't work in overflowed blocks,
 - doesn't parse your CSS! Launch it manually.
 
-### Installation
+## Installation
 
 Download:
 
@@ -38,7 +38,7 @@ Include it on your page:
 <script src="path/to/stickyfill.js"></script>
 ```
 
-### Usage
+## Usage
 
 JS:
 
@@ -72,7 +72,7 @@ Also worth having a clearfix:
 }
 ```
 
-### Pro tips
+## Pro tips
 
 - `top` specifies sticky’s position relatively to the top edge of the viewport. It accepts negative values, too.
 - You can push sticky’s bottom limit up or down by specifying positive or negative `margin-bottom`.
@@ -80,53 +80,53 @@ Also worth having a clearfix:
 
 Check out [the test page](http://wilddeer.github.io/stickyfill/test/) to understand stickies better.
 
-### API
+## API
 
-#### `Stickyfill.add(nodeList)`
+### `Stickyfill.add(nodeList)`
 
 _nodeList_ – [NodeList](https://developer.mozilla.org/en/docs/Web/API/NodeList), jQuery collection or any other iterable list of HTML elements.
 
 Adds elements from the list as stickies. Returns an array of created stickies.
 
-#### `Stickyfill.addOne(node)`
+### `Stickyfill.addOne(node)`
 
 _node_ – HTML element.
 
 Adds and element as a sticky. Returns an instance of `Stickyfill.Sticky`.
 
-#### `Stickyfill.remove(nodeList)`
+### `Stickyfill.remove(nodeList)`
 
 Remove stickies.
 
-#### `Stickyfill.removeOne(nodeList)`
+### `Stickyfill.removeOne(nodeList)`
 
 Removes a sticky.
 
-#### `Stickyfill.removeAll()`
+### `Stickyfill.removeAll()`
 
 Removes all stickies.
 
-#### `Stickyfill.refreshAll()`
+### `Stickyfill.refreshAll()`
 
 Recalc all metrics and update stickies' positions.
 
 Call it after layout changes. Launches automatically after window resizes and device orientations changes.
 
-#### `Stickyfill.stickies`
+### `Stickyfill.stickies`
 
 Array of added stickies.
 
-#### `Stickyfill.Sticky`
+### `Stickyfill.Sticky`
 
-#### `Sticky.refresh()`
+### `Sticky.refresh()`
 
-#### `Sticky.remove()`
+### `Sticky.remove()`
 
 
-###Using Stickyfill?
+## Using Stickyfill?
 
 Be sure to drop me a link &rarr; [:envelope: wd@dizaina.net](mailto:wd@dizaina.net). Wanna see it in action.
 
-###License
+## License
 
 [MIT license](http://opensource.org/licenses/MIT).
