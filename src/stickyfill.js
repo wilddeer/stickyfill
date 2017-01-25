@@ -118,11 +118,11 @@ class Sticky {
             },
             offsetHeight: parentNode.offsetHeight
         };
-        this._winOffset = {
+        this._offsetToWindow = {
             left: nodeWinOffset.left,
             right: document.documentElement.clientWidth - nodeWinOffset.right
         };
-        this._docOffset = {
+        this._offsetToParent = {
             top: nodeWinOffset.top - parentWinOffset.top - parseNumeric(parentComputedStyle.borderTopWidth),
             left: nodeWinOffset.left - parentWinOffset.left - parseNumeric(parentComputedStyle.borderLeftWidth),
             right: -nodeWinOffset.right + parentWinOffset.right - parseNumeric(parentComputedStyle.borderRightWidth)
@@ -198,9 +198,9 @@ class Sticky {
             case 'start':
                 extend(this._node.style, {
                     position: 'absolute',
-                    left: this._docOffset.left + 'px',
-                    right: this._docOffset.right + 'px',
-                    top: this._docOffset.top + 'px',
+                    left: this._offsetToParent.left + 'px',
+                    right: this._offsetToParent.right + 'px',
+                    top: this._offsetToParent.top + 'px',
                     bottom: 'auto',
                     width: 'auto',
                     marginLeft: 0,
@@ -212,8 +212,8 @@ class Sticky {
             case 'middle':
                 extend(this._node.style, {
                     position: 'fixed',
-                    left: this._winOffset.left + 'px',
-                    right: this._winOffset.right + 'px',
+                    left: this._offsetToWindow.left + 'px',
+                    right: this._offsetToWindow.right + 'px',
                     top: this._styles.top,
                     bottom: 'auto',
                     width: 'auto',
@@ -226,8 +226,8 @@ class Sticky {
             case 'end':
                 extend(this._node.style, {
                     position: 'absolute',
-                    left: this._docOffset.left + 'px',
-                    right: this._docOffset.right + 'px',
+                    left: this._offsetToParent.left + 'px',
+                    right: this._offsetToParent.right + 'px',
                     top: 'auto',
                     bottom: 0,
                     width: 'auto',
@@ -268,8 +268,8 @@ class Sticky {
         this._stickyMode = null;
         this._active = false;
 
-        delete this._winOffset;
-        delete this._docOffset;
+        delete this._offsetToWindow;
+        delete this._offsetToParent;
         delete this._limits;
     }
 
