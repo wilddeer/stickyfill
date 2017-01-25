@@ -85,7 +85,7 @@ class Sticky {
     }
 
     refresh() {
-        if (seppuku) return;
+        if (seppuku || this._removed) return;
         if (this._active) this._deactivate();
 
         const node = this._node;
@@ -188,7 +188,7 @@ class Sticky {
     }
 
     _recalcPosition() {
-        if (!this._active) return;
+        if (!this._active || this._removed) return;
 
         const stickyMode = scroll.top <= this._limits.start? 'start': scroll.top >= this._limits.end? 'end': 'middle';
 
@@ -241,7 +241,7 @@ class Sticky {
     }
 
     _fastCheck() {
-        if (!this._active) return;
+        if (!this._active || this._removed) return;
 
         if (
             Math.abs(getDocOffsetTop(this._clone.node) - this._clone.docOffsetTop) > 1 ||
@@ -250,7 +250,7 @@ class Sticky {
     }
 
     _deactivate() {
-        if (!this._active) return;
+        if (!this._active || this._removed) return;
 
         this._clone.node.parentNode.removeChild(this._clone.node);
         delete this._clone;
@@ -273,7 +273,7 @@ class Sticky {
         delete this._limits;
     }
 
-    kill() {
+    remove() {
         this._deactivate();
 
         stickies.some((sticky, index) => {
@@ -282,6 +282,8 @@ class Sticky {
                 return true;
             }
         });
+
+        this._removed = true;
     }
 }
 
@@ -324,7 +326,7 @@ const Stickyfill = {
     remove(node) {
         stickies.some((sticky, index) => {
             if (sticky._node === node) {
-                sticky.kill();
+                sticky.remove();
                 return true;
             }
         });
@@ -335,7 +337,7 @@ const Stickyfill = {
     },
 
     removeAll() {
-        while (stickies.length) stickies[0].kill();
+        while (stickies.length) stickies[0].remove();
     }
 };
 
