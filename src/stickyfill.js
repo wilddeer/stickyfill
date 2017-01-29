@@ -1,3 +1,5 @@
+'use strict';
+
 /*
  * 1. Check if the browser supports `position: sticky` natively or is too old to run the polyfill.
  *    If either of these is the case set `seppuku` flag. It will be checked later to disable key features
@@ -295,45 +297,81 @@ const Stickyfill = {
     stickies,
     Sticky,
 
-    add(nodeList) {
-        if (nodeList instanceof HTMLElement) nodeList = [nodeList];
-        if (!nodeList[0] || !nodeList.length) return;
+    add(node) {
+        // Check whether it’s an node
+        if (!(node instanceof HTMLElement)) {
+            // Maybe it’s a node list of some sort?
+            // Take first node from the list then
+            if (node.length && node[0]) node = node[0];
+            else return;
+        }
 
+        // Check if Stickyfill is already applied to the node
+        // and return existing sticky
+        for (var i = 0; i < stickies.length; i++) {
+            if (stickies[i]._node === node) return stickies[i];
+        }
+
+        // Create and return new sticky
+        return new Sticky(node);
+    },
+
+    addAll(nodeList) {
+        // If it’s a node make an array of one node
+        if (node instanceof HTMLElement) nodeList = [nodeList];
+        // Check if the argument is an iterable of some sort
+        if (!nodeList.length) return;
+
+        // Add every element as a sticky and return an array of created Sticky instances
         const addedStickies = [];
 
         for (let i = 0; i < nodeList.length; i++) {
             let node = nodeList[i];
-            if (!(node instanceof HTMLElement)) continue;
 
-            //check if Stickyfill is already applied to the node
-            if (stickies.every(sticky => sticky._node !== node))
-                addedStickies.push(new Sticky(node));
+            // If it’s not an HTMLElement – create an empty element to preserve 1-to-1
+            // correlation with input list
+            if (!(node instanceof HTMLElement)) {
+                addedStickies.push(void 0);
+                continue;
+            }
+
+            // If Stickyfill is already applied to the node
+            // and add existing sticky
+            if (stickies.some(sticky => {
+                if (sticky._node === node) {
+                    addedStickies.push(sticky);
+                    return true;
+                }
+            })) continue;
+
+            // Create and add new sticky
+            addedStickies.push(new Sticky(node));
         }
 
         return addedStickies;
     },
 
-    addOne(node) {
-        if (node[0]) node = node[0];
-        if (!(node instanceof HTMLElement)) return;
-
-        //check if Stickyfill is already applied to the node
-        if (stickies.some(sticky => sticky._node === node)) return;
-
-        return new Sticky(node);
-    },
-
-    remove(node) {
-        stickies.some((sticky, index) => {
-            if (sticky._node === node) {
-                sticky.remove();
-                return true;
-            }
-        });
-    },
-
     refreshAll() {
         stickies.forEach(sticky => sticky.refresh());
+    },
+
+    remove(nodeList) {
+        // If it’s a node make an array of one node
+        if (node instanceof HTMLElement) nodeList = [nodeList];
+        // Check if the argument is an iterable of some sort
+        if (!nodeList.length) return;
+
+        // Remove the stickies bound to the nodes in the list
+        for (let i = 0; i < nodeList.length; i++) {
+            let node = nodeList[i];
+
+            stickies.some(sticky => {
+                if (sticky._node === node) {
+                    sticky.remove();
+                    return true;
+                }
+            });
+        }
     },
 
     removeAll() {
@@ -416,7 +454,7 @@ if (!seppuku) init();
 /*
  * 7. Expose Stickyfill
  */
-if (typeof(module) != 'undefined' && module.exports) {
+if (typeof module != 'undefined' && module.exports) {
     module.exports = Stickyfill;
 }
 else {
