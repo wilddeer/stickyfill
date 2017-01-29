@@ -32,7 +32,8 @@ module.exports = function(grunt) {
             },
             dist: {
                 files: {
-                    'dist/stickyfill.js': ['dist/stickyfill.js']
+                    'dist/stickyfill.js': ['dist/stickyfill.js'],
+                    'dist/stickyfill.es6.js': ['src/stickyfill.js'],
                 }
             }
         },
