@@ -13,7 +13,6 @@ module.exports = function(grunt) {
 
         babel: {
             options: {
-                sourceMap: true,
                 presets: ['es2015']
             },
             dist: {
@@ -89,7 +88,6 @@ module.exports = function(grunt) {
         }
     });
 
-    // build
     grunt.loadNpmTasks('grunt-wrap');
     grunt.loadNpmTasks('grunt-babel');
     grunt.loadNpmTasks('grunt-contrib-uglify');
