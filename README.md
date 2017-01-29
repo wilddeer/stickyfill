@@ -124,7 +124,7 @@ Array of existing [Sticky](#Stickyfill.Sticky) instances.
 
 ### `Stickyfill.Sticky`
 
-Sticky class. You can call it directly:
+Sticky class. You can call it directly if you want:
 
 ```js
 const sticky = new Stickyfill.Sticky(element);
@@ -146,8 +146,16 @@ Removes the sticky.
 
 ### Prerequisites
 
-- Install [node](https://nodejs.org/en/),
-- install [`grunt-cli`](http://gruntjs.com/getting-started#installing-the-cli).
+- Install Git 😱
+- Install [node](https://nodejs.org/en/)
+- Install [`grunt-cli`](http://gruntjs.com/getting-started#installing-the-cli)
+- Clone the repo, `cd` into the repo folder, run `npm install` (or `yarn` if you are fancy).
+
+Ok, you are all set.
+
+### Building and testing
+
+ `cd` into the repo folder and run `grunt`. It will build the project from `/src/strickyfill.js` into `/dist` and run the watcher that will rebuild the project every time you change something in the source file.
 
 ## Using Stickyfill?
 
