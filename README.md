@@ -165,6 +165,10 @@ Commit the changes. **DO NOT** commit the files in the `/dist` folder. **DO NOT*
 
 Make a pull request 👍
 
+### Adding / removing / updating npm packages
+
+Use [Yarn](https://yarnpkg.com/), dont’t forget to commit `yarn.lock`.
+
 ## Using Stickyfill?
 
 Be sure to drop me a link &rarr; [:envelope: wd@dizaina.net](mailto:wd@dizaina.net). Wanna see it in action.
