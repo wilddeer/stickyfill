@@ -77,15 +77,6 @@ module.exports = function(grunt) {
         watch: {
             files: ['src/**/*.js'],
             tasks: ['build']
-        },
-
-        connect: {
-            server: {
-                options: {
-                    port: 8001,
-                    hostname: '*'
-                }
-            }
         }
     });
 
@@ -93,10 +84,9 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-babel');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-watch');
-    grunt.loadNpmTasks('grunt-contrib-connect');
     grunt.loadNpmTasks('grunt-bump');
     grunt.loadNpmTasks('grunt-shell');
     grunt.registerTask('build', ['babel', 'wrap', 'uglify']);
     grunt.registerTask('release', ['bump-only:patch', 'build', 'bump-commit', 'shell:push', 'shell:pushTags']);
-    grunt.registerTask('default', ['connect', 'build', 'watch']);
+    grunt.registerTask('default', ['build', 'watch']);
 };
