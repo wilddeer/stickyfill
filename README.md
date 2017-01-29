@@ -148,14 +148,22 @@ Removes the sticky.
 
 - Install Git 😱
 - Install [node](https://nodejs.org/en/)
-- Install [`grunt-cli`](http://gruntjs.com/getting-started#installing-the-cli)
+- Install [grunt-cli](http://gruntjs.com/getting-started#installing-the-cli)
 - Clone the repo, `cd` into the repo folder, run `npm install` (or `yarn` if you are fancy).
 
 Ok, you are all set.
 
 ### Building and testing
 
- `cd` into the repo folder and run `grunt`. It will build the project from `/src/strickyfill.js` into `/dist` and run the watcher that will rebuild the project every time you change something in the source file.
+`cd` into the repo folder and run `grunt`. It will build the project from `/src/strickyfill.js` into `/dist` and run the watcher that will rebuild the project every time you change something in the source file.
+
+Make the changes to the source file. Stick to ES6 syntax.
+
+Open `/test/index.html` in a browser that [doesn’t support](http://caniuse.com/#feat=css-sticky) `position: sticky` to check if everything works as expected. Compare the results to the same page in a browser that supports `position: sticky`.
+
+Commit the changes. **DO NOT** commit the files in the `/dist` folder. **DO NOT** change the version in `package.json`.
+
+Make a pull request 👍
 
 ## Using Stickyfill?
 
