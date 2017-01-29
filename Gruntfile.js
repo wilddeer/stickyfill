@@ -7,8 +7,6 @@ module.exports = function(grunt) {
 `/*!
   * Stickyfill – \`position: sticky\` polyfill
   * v. <%= pkg.version %> | <%= pkg.homepage %>
-  * Copyright <%= pkg.author.name %> | <%= pkg.author.url %>
-  *
   * MIT License
   */
 `,
