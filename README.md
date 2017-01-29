@@ -43,13 +43,13 @@ Include it on your page:
 JS:
 
 ```js
-Stickyfill.add(document.querySelectorAll('.sticky'));
+Stickyfill.addAll(document.querySelectorAll('.sticky'));
 ```
 
 or JS + jQuery:
 
 ```js
-Stickyfill.add($('.sticky'));
+Stickyfill.addAll($('.sticky'));
 ```
 
 CSS:
@@ -84,47 +84,53 @@ Check out [the test page](http://wilddeer.github.io/stickyfill/test/) to underst
 
 ### `Stickyfill`
 
-#### `Stickyfill.add(nodeList)`
+#### `Stickyfill.add(element)`
 
-Accepts a [NodeList](https://developer.mozilla.org/en/docs/Web/API/NodeList), jQuery collection or any other iterable list of HTML elements. Adds elements from the list as stickies. Returns an array of created [Sticky](#stickyfillsticky) instances.
+`node` – `HTMLElement` or iterable element list ([`NodeList`](https://developer.mozilla.org/en/docs/Web/API/NodeList), jQuery collection, etc.). First element of the list is taken.
 
-#### `Stickyfill.addOne(node)`
+Adds the element as a sticky. Returns new [Sticky](#stickyfillsticky) instance associated with the element.
 
-Adds and element as a sticky. Returns created [Sticky](#stickyfillsticky) instance.
+If there’s a sticky associated with the element, returns existing [Sticky](#stickyfillsticky) instance instead.
 
-#### `Stickyfill.remove(nodeList)`
+#### `Stickyfill.addAll(elementList)`
 
-Accepts a [NodeList](https://developer.mozilla.org/en/docs/Web/API/NodeList), jQuery collection or any other iterable list of HTML elements. Removes stickies bound to the elements from the list.
+`elementList` – iterable element list ([`NodeList`](https://developer.mozilla.org/en/docs/Web/API/NodeList), jQuery collection, etc.) or single `HTMLElement`.
 
-#### `Stickyfill.removeOne(node)`
+Adds the elements as stickies. Skips the elements that have stickies associated with the them.
 
-Removes a sticky bound to the HTML element.
-
-#### `Stickyfill.removeAll()`
-
-Removes all stickies.
+Returns an array of [Sticky](#stickyfillsticky) instances associated with the lements (both existing and new ones).
 
 #### `Stickyfill.refreshAll()`
 
-Refreshes all stickies, updates their parameters and positions.
-
-Call it after layout changes in case automatic layout change detecdtion doesn’t trigger in your case.
+Refreshes all existing stickies, updates their parameters and positions.
 
 All stickies are automatically refreshed after window resizes and device orientations changes.
 
+There’s also a fast but not very accurate layout change detection that triggers this method. If it failes to do so in your case, call this method manually.
+
+#### `Stickyfill.remove(elementList)`
+
+`elementList` – iterable element list ([`NodeList`](https://developer.mozilla.org/en/docs/Web/API/NodeList), jQuery collection, etc.) or single `HTMLElement`.
+
+Removes stickies associated with the elements in the list.
+
+#### `Stickyfill.removeAll()`
+
+Removes all existing stickies.
+
 #### `Stickyfill.stickies`
 
-Array of created [Sticky](#Stickyfill.Sticky) instances.
+Array of existing [Sticky](#Stickyfill.Sticky) instances.
 
 ### `Stickyfill.Sticky`
 
 Sticky class. You can call it directly:
 
 ```js
-const sticky = new Stickyfill.Sticky(node);
+const sticky = new Stickyfill.Sticky(element);
 ```
 
-It will throw an error if there’s a sticky bound to the passed node.
+It will throw an error if there’s a sticky bound to the passed element.
 
 #### `Sticky.refresh()`
 
@@ -134,6 +140,14 @@ Refreshes the sticky, updates its parameters and position.
 
 Removes the sticky.
 
+## Bug reports
+
+## Contributing
+
+### Prerequisites
+
+- Install [node](https://nodejs.org/en/),
+- install [`grunt-cli`](http://gruntjs.com/getting-started#installing-the-cli).
 
 ## Using Stickyfill?
 
