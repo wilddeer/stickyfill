@@ -86,7 +86,7 @@ Check out [the test page](http://wilddeer.github.io/stickyfill/test/) to underst
 
 #### `Stickyfill.add(element)`
 
-`node` – `HTMLElement` or iterable element list ([`NodeList`](https://developer.mozilla.org/en/docs/Web/API/NodeList), jQuery collection, etc.). First element of the list is taken.
+`element` – `HTMLElement` or iterable element list ([`NodeList`](https://developer.mozilla.org/en/docs/Web/API/NodeList), jQuery collection, etc.). First element of the list is taken.
 
 Adds the element as a sticky. Returns new [Sticky](#stickyfillsticky) instance associated with the element.
 
