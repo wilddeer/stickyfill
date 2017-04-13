@@ -1,10 +1,10 @@
-#`position: sticky` polyfill
+# `position: sticky` polyfill
 
 The most accurate sticky polyfill out in the wild.
 
 Check out [the demo](http://wd.dizaina.net/en/scripts/stickyfill/) and [use cases test page](http://wilddeer.github.io/stickyfill/test/).
 
-###What it does
+## What it does
 
 - supports top-positioned stickies,
 - works in IE9+,
@@ -17,13 +17,13 @@ Check out [the demo](http://wd.dizaina.net/en/scripts/stickyfill/) and [use case
 	- mimics native `top` and `margin-bottom` behavior,
 	- ~~works with table cells~~ disabled until Firefox [makes a native implementation](https://bugzilla.mozilla.org/show_bug.cgi?id=975644)
 
-###What it doesn't
+## What it doesn't
 
 - doesn't support left, right, bottom or combined stickies,
 - doesn't work in overflowed blocks,
 - doesn't parse your CSS! Launch it manually.
 
-###Installation
+## Installation
 
 Download:
 
@@ -42,7 +42,7 @@ Also available in [Bower](http://bower.io):
 bower install Stickyfill --save
 ```
 
-###Usage
+## Usage
 
 JS:
 
@@ -80,7 +80,7 @@ Also worth having a clearfix:
 }
 ```
 
-###Pro tips
+## Pro tips
 
 - `top` specifies sticky's position relatively to the top edge of the viewport. It accepts negative values, too.
 - Despite common misconception, sticky's bottom limit is defined by its parent node's bottom boundary. It has nothing to do with `offsetParent` (closest relatively positioned parent).
@@ -89,50 +89,50 @@ Also worth having a clearfix:
 
 Check out [the test page](http://wilddeer.github.io/stickyfill/test/) to understand stickies better.
 
-###API
+## API
 
-####`Stickyfill.add(HTMLNode)`
+### `Stickyfill.add(HTMLNode)`
 
 Add new sticky and `init()`, if necessary.
 
-####`Stickyfill.remove(HTMLNode)`
+### `Stickyfill.remove(HTMLNode)`
 
 Remove sticky.
 
-####`Stickyfill.rebuild()`
+### `Stickyfill.rebuild()`
 
 Recalc all metrics and update stickies' positions.
 
 Call it after layout changes. Launches automatically after window resizes and device orientations changes.
 
-####`Stickyfill.pause()`
+### `Stickyfill.pause()`
 
 Remove event listeners.
 
 Usefull for debugging. Use `Stickyfill.init()` to get stuff running again.
 
-####`Stickyfill.stop()`
+### `Stickyfill.stop()`
 
 Disable stickies.
 
 Use `Stickyfill.init()` to enable them again.
 
-####`Stickyfill.kill()`
+### `Stickyfill.kill()`
 
 Disable stickies and erase `Stickyfill.stickies`.
 
-####`Stickyfill.init()`
+### `Stickyfill.init()`
 
 Attach event listeners and start watching for stickies in `Stickyfill.stickies`.
 
-####`Stickyfill.stickies`
+### `Stickyfill.stickies`
 
 Array of parametric objects for all added stickies.
 
-###Using Stickyfill?
+## Using Stickyfill?
 
 Be sure to drop me a link &rarr; [:envelope: wd@dizaina.net](mailto:wd@dizaina.net). Wanna see it in action.
 
-###License
+## License
 
 [MIT license](http://opensource.org/licenses/MIT).
