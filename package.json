@@ -1,6 +1,6 @@
 {
   "name": "Stickyfill",
-  "version": "1.1.4",
+  "version": "1.1.7",
   "license": "MIT",
   "homepage": "https://github.com/wilddeer/stickyfill",
   "repository": {
@@ -11,7 +11,14 @@
     "name": "Oleg Korsunsky",
     "url": "http://wd.dizaina.net/"
   },
-  "main": "dist/stickyfill.js",
+  "tags": [
+    "polyfill",
+    "webmodule",
+    "position",
+    "sticky",
+    "browser"
+  ],
+  "main": "dist/stickyfill.min.js",
   "devDependencies": {
     "grunt": "~0.4.1",
     "grunt-contrib-uglify": "~0.2.5",
