@@ -67,7 +67,7 @@
             rebuild();
             return;
         }
-        
+
         if (win.pageYOffset != scroll.top) {
             updateScrollPos();
             recalcAllPos();
@@ -267,7 +267,7 @@
             },
             nodeOffset = getElementOffset(node),
             parentOffset = getElementOffset(parentNode),
-            
+
             parent = {
                 node: parentNode,
                 css: {
@@ -364,8 +364,8 @@
         updateScrollPos();
         initAll();
 
-        win.addEventListener('scroll', onScroll);
-        win.addEventListener('wheel', onWheel);
+        win.addEventListener('scroll', onScroll, { passive: true });
+        win.addEventListener('wheel', onWheel, { passive: true });
 
         //watch for width changes
         win.addEventListener('resize', rebuild);
@@ -383,11 +383,11 @@
         if (!initialized) return;
 
         deinitAll();
-        
+
         for (var i = watchArray.length - 1; i >= 0; i--) {
             watchArray[i] = getElementParams(watchArray[i].node);
         }
-        
+
         initAll();
     }
 
@@ -405,7 +405,7 @@
 
     function stop() {
         pause();
-        deinitAll(); 
+        deinitAll();
     }
 
     function kill() {
