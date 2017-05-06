@@ -1,3 +1,10 @@
+/*!
+ * Stickyfill -- `position: sticky` polyfill
+ * v. 1.1.3 | https://github.com/wilddeer/stickyfill
+ * Copyright Oleg Korsunsky | http://wd.dizaina.net/
+ *
+ * MIT License
+ */
 (function(doc, win) {
     var watchArray = [],
         scroll,
@@ -172,6 +179,7 @@
                 nodeStyle.marginLeft = 0;
                 nodeStyle.marginRight = 0;
                 nodeStyle.marginTop = 0;
+                el.node.classList.remove('sticky-active');
                 break;
 
             case 1:
@@ -184,6 +192,7 @@
                 nodeStyle.marginLeft = 0;
                 nodeStyle.marginRight = 0;
                 nodeStyle.marginTop = 0;
+                el.node.classList.add('sticky-active');
                 break;
 
             case 2:
@@ -195,6 +204,7 @@
                 nodeStyle.width = 'auto';
                 nodeStyle.marginLeft = 0;
                 nodeStyle.marginRight = 0;
+                el.node.classList.remove('sticky-active');
                 break;
         }
 
