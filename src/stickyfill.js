@@ -222,7 +222,9 @@
     }
 
     function killClone(el) {
-        el.clone.parentNode.removeChild(el.clone);
+        if (el.clone.parentNode != null) {
+            el.clone.parentNode.removeChild(el.clone);
+        }
         el.clone = undefined;
     }
 
