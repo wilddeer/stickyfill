@@ -96,7 +96,7 @@ If there’s a sticky associated with the element, returns existing [Sticky](#st
 
 `elementList` – iterable element list ([`NodeList`](https://developer.mozilla.org/en/docs/Web/API/NodeList), jQuery collection, etc.) or single `HTMLElement`.
 
-Adds the elements as stickies. Skips the elements that have stickies associated with the them.
+Adds the elements as stickies. Skips the elements that have stickies associated with them.
 
 Returns an array of [Sticky](#stickyfillsticky) instances associated with the elements (both existing and new ones).
 
