@@ -98,7 +98,7 @@ If there’s a sticky associated with the element, returns existing [Sticky](#st
 
 Adds the elements as stickies. Skips the elements that have stickies associated with the them.
 
-Returns an array of [Sticky](#stickyfillsticky) instances associated with the lements (both existing and new ones).
+Returns an array of [Sticky](#stickyfillsticky) instances associated with the elements (both existing and new ones).
 
 #### `Stickyfill.refreshAll()`
 
