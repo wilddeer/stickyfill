@@ -36,6 +36,12 @@ Include it on your page:
 <script src="path/to/stickyfill.js"></script>
 ```
 
+[NPM](https://npmjs.com):
+
+```
+npm install stickyfill
+```
+
 Also available in [Bower](http://bower.io):
 
 ```
