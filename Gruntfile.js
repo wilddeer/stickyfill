@@ -23,17 +23,27 @@ module.exports = function(grunt) {
         },
 
         wrap: {
-            options: {
-                wrapper: [
-                    '<%= banner %>\n;(function(window, document) {',
-                    '})(this, document);'
-                ],
-                indent: '    '
-            },
-            dist: {
+            es5: {
+                options: {
+                    wrapper: [
+                        '<%= banner %>\n;(function(window, document) {',
+                        '})(this, document);'
+                    ],
+                    indent: '    '
+                },
                 files: {
-                    'dist/stickyfill.js': ['dist/stickyfill.js'],
-                    'dist/stickyfill.es6.js': ['src/stickyfill.js'],
+                    'dist/stickyfill.js': ['dist/stickyfill.js']
+                }
+            },
+            es6: {
+                options: {
+                    wrapper: [
+                        '<%= banner %>',
+                        ''
+                    ]
+                },
+                files: {
+                    'dist/stickyfill.es6.js': ['src/stickyfill.js']
                 }
             }
         },
