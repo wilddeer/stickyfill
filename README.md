@@ -159,9 +159,9 @@ Ok, you are all set.
 
 `cd` into the repo folder and run `grunt`. It will build the project from `/src/strickyfill.js` into `/dist` and run the watcher that will rebuild the project every time you change something in the source file.
 
-Make the changes to the source file. Stick to ES6 syntax.
+Make changes to the source file. Stick to ES6 syntax.
 
-Open `/test/index.html` in a browser that [doesn’t support](http://caniuse.com/#feat=css-sticky) `position: sticky` to check if everything works as expected. Compare the results to the same page in a browser that supports `position: sticky`.
+Open `/test/index.html` in a browser that [doesn’t support](http://caniuse.com/#feat=css-sticky) `position: sticky` to check that everything works as expected. Compare the results to the same page in a browser that supports `position: sticky`.
 
 Commit the changes. **DO NOT** commit the files in the `/dist` folder. **DO NOT** change the version in `package.json`.
 
