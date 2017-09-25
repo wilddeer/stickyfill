@@ -9,7 +9,7 @@
   },
   "author": {
     "name": "Oleg Korsunsky",
-    "url": "http://wd.dizaina.net/"
+    "url": "https://github.com/wilddeer"
   },
   "main": "dist/stickyfill.js",
   "devDependencies": {
