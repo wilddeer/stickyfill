@@ -318,7 +318,7 @@ const Stickyfill = {
 
     addAll(nodeList) {
         // If it’s a node make an array of one node
-        if (node instanceof HTMLElement) nodeList = [nodeList];
+        if (nodeList instanceof HTMLElement) nodeList = [nodeList];
         // Check if the argument is an iterable of some sort
         if (!nodeList.length) return;
 
@@ -357,7 +357,7 @@ const Stickyfill = {
 
     remove(nodeList) {
         // If it’s a node make an array of one node
-        if (node instanceof HTMLElement) nodeList = [nodeList];
+        if (nodeList instanceof HTMLElement) nodeList = [nodeList];
         // Check if the argument is an iterable of some sort
         if (!nodeList.length) return;
 
