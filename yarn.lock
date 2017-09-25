@@ -802,9 +802,9 @@ grunt-shell@^2.1.0:
     chalk "^1.0.0"
     npm-run-path "^2.0.0"
 
-grunt-wrap@^0.3.0:
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/grunt-wrap/-/grunt-wrap-0.3.0.tgz#ea8444fd6b396e9c2f4a8170032cfa8b400c17c1"
+grunt-wrap@^0.3.1:
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/grunt-wrap/-/grunt-wrap-0.3.1.tgz#75120979a2f2fe96242fb08b00f65ead2f56c966"
 
 grunt@^1.0.1:
   version "1.0.1"
