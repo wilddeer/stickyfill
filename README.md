@@ -84,15 +84,15 @@ Check out [the test page](http://wilddeer.github.io/stickyfill/test/) to underst
 
 ### `Stickyfill`
 
-#### `Stickyfill.add(element)`
+#### `Stickyfill.addOne(element)`
 
-`element` – `HTMLElement` or iterable element list ([`NodeList`](https://developer.mozilla.org/en/docs/Web/API/NodeList), jQuery collection, etc.). First element of the list is taken.
+`element` – `HTMLElement` or iterable element list ([`NodeList`](https://developer.mozilla.org/en/docs/Web/API/NodeList), jQuery collection, etc.). First element of the list is used.
 
 Adds the element as a sticky. Returns new [Sticky](#stickyfillsticky) instance associated with the element.
 
 If there’s a sticky associated with the element, returns existing [Sticky](#stickyfillsticky) instance instead.
 
-#### `Stickyfill.addAll(elementList)`
+#### `Stickyfill.add(elementList)`
 
 `elementList` – iterable element list ([`NodeList`](https://developer.mozilla.org/en/docs/Web/API/NodeList), jQuery collection, etc.) or single `HTMLElement`.
 
@@ -107,6 +107,12 @@ Refreshes all existing stickies, updates their parameters and positions.
 All stickies are automatically refreshed after window resizes and device orientations changes.
 
 There’s also a fast but not very accurate layout change detection that triggers this method. Call this method manually in case automatic detection fails.
+
+#### `Stickyfill.removeOne(element)`
+
+`element` – `HTMLElement` or iterable element list ([`NodeList`](https://developer.mozilla.org/en/docs/Web/API/NodeList), jQuery collection, etc.). First element of the list is used.
+
+Removes sticky associated with the element.
 
 #### `Stickyfill.remove(elementList)`
 
