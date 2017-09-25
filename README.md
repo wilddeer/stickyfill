@@ -106,7 +106,7 @@ Refreshes all existing stickies, updates their parameters and positions.
 
 All stickies are automatically refreshed after window resizes and device orientations changes.
 
-There’s also a fast but not very accurate layout change detection that triggers this method. If it failes to do so in your case, call this method manually.
+There’s also a fast but not very accurate layout change detection that triggers this method. Call this method manually in case automatic detection fails.
 
 #### `Stickyfill.remove(elementList)`
 
@@ -124,7 +124,7 @@ Array of existing [Sticky](#Stickyfill.Sticky) instances.
 
 ### `Stickyfill.Sticky`
 
-Sticky class. You can call it directly if you want:
+Sticky class. You can use it directly if you want:
 
 ```js
 const sticky = new Stickyfill.Sticky(element);
@@ -141,6 +141,8 @@ Refreshes the sticky, updates its parameters and position.
 Removes the sticky.
 
 ## Bug reports
+
+Check [existing issues](https://github.com/wilddeer/stickyfill/issues) before creating new one. **Please provide a live reproduction of a bug.**
 
 ## Contributing
 
