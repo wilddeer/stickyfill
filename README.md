@@ -55,7 +55,7 @@ Include it on your page:
 
 ## Usage
 
-First things first, make sure your stickies work in the (browsers that support them natively)[http://caniuse.com/#feat=css-sticky], e.g.:
+First things first, make sure your stickies work in the [browsers that support them natively](http://caniuse.com/#feat=css-sticky), e.g.:
 
 ```html
 <div class="sticky">
