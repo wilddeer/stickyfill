@@ -41,13 +41,13 @@ Include it on your page:
 JS:
 
 ```js
-Stickyfill.addAll(document.querySelectorAll('.sticky'));
+Stickyfill.add(document.querySelectorAll('.sticky'));
 ```
 
 or JS + jQuery:
 
 ```js
-Stickyfill.addAll($('.sticky'));
+Stickyfill.add($('.sticky'));
 ```
 
 CSS:
