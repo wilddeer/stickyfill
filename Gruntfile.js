@@ -65,11 +65,11 @@ module.exports = function(grunt) {
                 files: ['package.json', 'bower.json'],
                 updateConfigs: ['pkg'],
                 commit: true,
-                commitMessage: 'v. %VERSION%',
+                commitMessage: 'v %VERSION%',
                 commitFiles: ['.'],
                 createTag: true,
                 tagName: '%VERSION%',
-                tagMessage: 'v. %VERSION%',
+                tagMessage: 'v %VERSION%',
                 push: false
             }
         },
