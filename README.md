@@ -83,7 +83,8 @@ Stickyfill.add(elements);
 or JS + jQuery:
 
 ```js
-Stickyfill.add($('.sticky'));
+var elements = $('.sticky');
+Stickyfill.add(elements);
 ```
 
 Also worth having a clearfix:
