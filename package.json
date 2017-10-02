@@ -1,5 +1,5 @@
 {
-  "name": "Stickyfill",
+  "name": "stickyfilljs",
   "version": "1.1.4",
   "description": "Polyfill for CSS `position: sticky`",
   "keywords": [
