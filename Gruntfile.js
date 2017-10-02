@@ -1,32 +1,62 @@
-/*global module */
 module.exports = function(grunt) {
     'use strict';
 
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
-        banner: '/*!\n * Stickyfill -- `position: sticky` polyfill\n * v. <%= pkg.version %> | <%= pkg.homepage %>\n * Copyright <%= pkg.author.name %> | <%= pkg.author.url %>\n *\n * MIT License\n */\n',
-        uglify: {
+        banner:
+`/*!
+  * Stickyfill – \`position: sticky\` polyfill
+  * v. <%= pkg.version %> | <%= pkg.homepage %>
+  * MIT License
+  */
+`,
+
+        babel: {
             options: {
-                banner: '<%= banner %>',
-                mangle: {
-                    except: ['Stickyfill', '$', 'jQuery']
-                }
+                presets: ['es2015']
             },
             dist: {
                 files: {
-                    'dist/stickyfill.min.js': ['src/stickyfill.js']
+                    'dist/stickyfill.js': 'src/stickyfill.js'
                 }
             }
         },
 
-        concat: {
+        wrap: {
+            es5: {
+                options: {
+                    wrapper: [
+                        '<%= banner %>\n;(function(window, document) {',
+                        '})(this, document);'
+                    ],
+                    indent: '    '
+                },
+                files: {
+                    'dist/stickyfill.js': ['dist/stickyfill.js']
+                }
+            },
+            es6: {
+                options: {
+                    wrapper: [
+                        '<%= banner %>',
+                        ''
+                    ]
+                },
+                files: {
+                    'dist/stickyfill.es6.js': ['src/stickyfill.js']
+                }
+            }
+        },
+
+        uglify: {
             options: {
                 banner: '<%= banner %>',
-                separator: '\n'
+                mangle: true
             },
             dist: {
-                src: ['src/stickyfill.js'],
-                dest: 'dist/stickyfill.js'
+                files: {
+                    'dist/stickyfill.min.js': ['dist/stickyfill.js']
+                }
             }
         },
 
@@ -35,11 +65,11 @@ module.exports = function(grunt) {
                 files: ['package.json', 'bower.json'],
                 updateConfigs: ['pkg'],
                 commit: true,
-                commitMessage: 'tagging v. %VERSION%',
+                commitMessage: 'v %VERSION%',
                 commitFiles: ['.'],
                 createTag: true,
                 tagName: '%VERSION%',
-                tagMessage: 'tagging v. %VERSION%',
+                tagMessage: 'v %VERSION%',
                 push: false
             }
         },
@@ -57,27 +87,16 @@ module.exports = function(grunt) {
         watch: {
             files: ['src/**/*.js'],
             tasks: ['build']
-        },
-
-        connect: {
-            server: {
-                options: {
-                    port: 8001,
-                    hostname: '*'
-                }
-            }
         }
     });
 
-    // build
+    grunt.loadNpmTasks('grunt-wrap');
+    grunt.loadNpmTasks('grunt-babel');
     grunt.loadNpmTasks('grunt-contrib-uglify');
-    grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-watch');
-    grunt.loadNpmTasks('grunt-contrib-connect');
     grunt.loadNpmTasks('grunt-bump');
     grunt.loadNpmTasks('grunt-shell');
-    grunt.registerTask('build', ['uglify', 'concat']);
-    grunt.registerTask('release', ['bump-only:patch', 'uglify', 'concat', 'bump-commit', 'shell:push', 'shell:pushTags']);
-    grunt.registerTask('w', ['connect', 'build', 'watch']);
-    grunt.registerTask('default', 'build');
+    grunt.registerTask('build', ['babel', 'wrap', 'uglify']);
+    grunt.registerTask('release', ['bump-only:patch', 'build', 'bump-commit', 'shell:push', 'shell:pushTags']);
+    grunt.registerTask('default', ['build', 'watch']);
 };
