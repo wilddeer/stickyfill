@@ -25,32 +25,43 @@ Check out [the demo](http://wd.dizaina.net/en/scripts/stickyfill/) and [use case
 
 ## Installation
 
-Download:
+### NPM
 
-- [stickyfill.min.js](https://raw.github.com/wilddeer/stickyfill/master/dist/stickyfill.min.js) – minified production script
-- [stickyfill.js](https://raw.github.com/wilddeer/stickyfill/master/dist/stickyfill.js) – full development script
+```
+npm install stickyfilljs --save
+```
+
+### Yarn
+
+```
+yarn add stickyfilljs
+```
+
+### Raw ES6 module
+
+[stickyfill.es6.js](https://raw.github.com/wilddeer/stickyfill/master/dist/stickyfill.es6.js)
+
+### Old fashioned
+
+Download minified production ES5 script:
+
+[stickyfill.min.js](https://raw.github.com/wilddeer/stickyfill/master/dist/stickyfill.min.js)
 
 Include it on your page:
 
 ```html
-<script src="path/to/stickyfill.js"></script>
+<script src="path/to/stickyfill.min.js"></script>
 ```
 
 ## Usage
 
-JS:
+First things first, make sure your stickies work in the (browsers that support them natively)[http://caniuse.com/#feat=css-sticky], e.g.:
 
-```js
-Stickyfill.add(document.querySelectorAll('.sticky'));
+```html
+<div class="sticky">
+    ...
+</div>
 ```
-
-or JS + jQuery:
-
-```js
-Stickyfill.add($('.sticky'));
-```
-
-CSS:
 
 ```css
 .sticky {
@@ -58,6 +69,21 @@ CSS:
     position: sticky;
     top: 0;
 }
+```
+
+Then apply the polyfill:
+
+JS:
+
+```js
+var elements = document.querySelectorAll('.sticky');
+Stickyfill.add(elements);
+```
+
+or JS + jQuery:
+
+```js
+Stickyfill.add($('.sticky'));
 ```
 
 Also worth having a clearfix:
