@@ -81,6 +81,10 @@ module.exports = function(grunt) {
 
             pushTags: {
                 command: 'git push --tags'
+            },
+
+            publishToNpm: {
+                command: 'npm publish'
             }
         },
 
@@ -97,6 +101,6 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-bump');
     grunt.loadNpmTasks('grunt-shell');
     grunt.registerTask('build', ['babel', 'wrap', 'uglify']);
-    grunt.registerTask('release', ['bump-only:patch', 'build', 'bump-commit', 'shell:push', 'shell:pushTags']);
+    grunt.registerTask('release', ['bump-only:patch', 'build', 'bump-commit', 'shell:push', 'shell:pushTags', 'shell:publishToNpm']);
     grunt.registerTask('default', ['build', 'watch']);
 };
