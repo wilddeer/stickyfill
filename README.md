@@ -171,6 +171,24 @@ Refreshes the sticky, updates its parameters and position.
 
 Removes the sticky. Restores the element to its original state.
 
+## Feature requests
+
+### TL;DR
+
+These features will never be implemented in Stickyfill:
+
+- Callbacks for sticky state changes
+- Switching classes between different sticky states
+- Other features that add non-standard functionality
+
+If your requset isn’t about one of these, you are welcome to [create an issue](https://github.com/wilddeer/stickyfill/issues/new). Please check [existing issues](https://github.com/wilddeer/stickyfill/issues) before creating new one.
+
+### Some reasoning
+
+Stickyfill is a [polyfill](https://en.wikipedia.org/wiki/Polyfill). This means that it implements a feature (sticky positioning in this case) that already exists in some browsers natively, and allows to use this feature in the browsers that don’t support it yet and older versions of the browsers that didn’t support it at the time. This is its only purpose.
+
+This also means that Stickyfill does nothing in the browsers that _do_ support sticky positioning. Which, in turn, means that those browsers won’t support any additional non-standard features.
+
 ## Bug reports
 
 Check [existing issues](https://github.com/wilddeer/stickyfill/issues) before creating new one. **Please provide a live reproduction of a bug.**
