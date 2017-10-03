@@ -478,3 +478,7 @@ if (typeof module != 'undefined' && module.exports) {
 else {
     window.Stickyfill = Stickyfill;
 }
+
+if ( typeof module === "object" && module.exports ) {
+    module.exports = Stickyfill;
+}
