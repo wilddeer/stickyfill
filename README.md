@@ -161,7 +161,7 @@ Sticky class. You can use it directly if you want:
 const sticky = new Stickyfill.Sticky(element);
 ```
 
-It will throw an error if there’s a sticky bound to the passed element.
+Throws an error if there’s a sticky already bound to the element.
 
 #### `Sticky.refresh()`
 
@@ -169,7 +169,7 @@ Refreshes the sticky, updates its parameters and position.
 
 #### `Sticky.remove()`
 
-Removes the sticky.
+Removes the sticky. Restores the element to its original state.
 
 ## Bug reports
 
@@ -204,7 +204,7 @@ Use [Yarn](https://yarnpkg.com/), dont’t forget to commit `yarn.lock`.
 
 ## Using Stickyfill?
 
-Be sure to drop me a link &rarr; [:envelope: wd@dizaina.net](mailto:wd@dizaina.net). Wanna see it in action.
+🍻 [Buy me a beer](https://www.paypal.me/wilddeer/0usd)
 
 ## License
 
