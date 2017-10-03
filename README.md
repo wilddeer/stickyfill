@@ -181,7 +181,7 @@ These features will never be implemented in Stickyfill:
 - Switching classes between different sticky states
 - Other features that add non-standard functionality
 
-If your requset isn’t about one of these, you are welcome to [create an issue](https://github.com/wilddeer/stickyfill/issues/new). Please check [existing issues](https://github.com/wilddeer/stickyfill/issues) before creating new one.
+If your request isn’t about one of these, you are welcome to [create an issue](https://github.com/wilddeer/stickyfill/issues/new). Please check [existing issues](https://github.com/wilddeer/stickyfill/issues) before creating new one.
 
 ### Some reasoning
 
