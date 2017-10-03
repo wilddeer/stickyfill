@@ -101,7 +101,7 @@ Also worth having a clearfix:
 
 - `top` specifies sticky’s position relatively to the top edge of the viewport. It accepts negative values, too.
 - You can push sticky’s bottom limit up or down by specifying positive or negative `margin-bottom`.
-- Any non-default value (not `visible`) for `overflow`, `overflow-x`, or `overflow-y` on any of the predecessor elements anchors the sticky to the overflow context of that predecessor. Simply put, scrolling the predecessor will cause the sticky to stick, scrolling the window will not. This is expected with `overflow: auto` and `overflow: scroll`, but often causes confusion with `overflow: hidden`. Keep this in mind, folks!
+- Any non-default value (not `visible`) for `overflow`, `overflow-x`, or `overflow-y` on any of the ancestor elements anchors the sticky to the overflow context of that ancestor. Simply put, scrolling the ancestor will cause the sticky to stick, scrolling the window will not. This is expected with `overflow: auto` and `overflow: scroll`, but often causes confusion with `overflow: hidden`. Keep this in mind, folks!
 
 Check out [the test page](http://wilddeer.github.io/stickyfill/test/) to understand stickies better.
 
