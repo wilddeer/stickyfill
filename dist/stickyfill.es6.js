@@ -1,6 +1,6 @@
 /*!
   * Stickyfill – `position: sticky` polyfill
-  * v. 2.0.0 | https://github.com/wilddeer/stickyfill
+  * v. 2.0.1 | https://github.com/wilddeer/stickyfill
   * MIT License
   */
 
@@ -35,6 +35,9 @@ else {
 /*
  * 2. “Global” vars used across the polyfill
  */
+
+// Check if Shadow Root constructor exists to make further checks simpler
+const shadowRootExists = typeof ShadowRoot !== 'undefined';
 
 // Last saved scroll position
 const scroll = {
@@ -114,7 +117,8 @@ class Sticky {
         /*
          * 2. Get necessary node parameters
          */
-        const parentNode = node.parentNode;
+        const referenceNode = node.parentNode;
+        const parentNode = shadowRootExists && referenceNode instanceof ShadowRoot? referenceNode.host: referenceNode;
         const nodeWinOffset = node.getBoundingClientRect();
         const parentWinOffset = parentNode.getBoundingClientRect();
         const parentComputedStyle = getComputedStyle(parentNode);
@@ -189,7 +193,7 @@ class Sticky {
             position: 'static'
         });
 
-        parentNode.insertBefore(clone.node, node);
+        referenceNode.insertBefore(clone.node, node);
         clone.docOffsetTop = getDocOffsetTop(clone.node);
 
         this._recalcPosition();
