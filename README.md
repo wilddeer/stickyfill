@@ -226,4 +226,4 @@ Use [Yarn](https://yarnpkg.com/), dont’t forget to commit `yarn.lock`.
 
 ## License
 
-[MIT license](https://github.com/wilddeer/stickyfill/blob/master/LICENSE).
+[MIT license](LICENSE).
