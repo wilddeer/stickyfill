@@ -27,7 +27,7 @@ module.exports = function(grunt) {
                 options: {
                     wrapper: [
                         '<%= banner %>\n;(function(window, document) {',
-                        '})(this, document);'
+                        '})(window, document);'
                     ],
                     indent: '    '
                 },
