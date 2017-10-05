@@ -1,6 +1,6 @@
 /*!
   * Stickyfill – `position: sticky` polyfill
-  * v. 2.0.1 | https://github.com/wilddeer/stickyfill
+  * v. 2.0.2 | https://github.com/wilddeer/stickyfill
   * MIT License
   */
 
@@ -503,4 +503,4 @@
         window.Stickyfill = Stickyfill;
     }
     
-})(this, document);
+})(window, document);
