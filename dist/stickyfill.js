@@ -503,4 +503,4 @@
         window.Stickyfill = Stickyfill;
     }
     
-})(this, document);
+})(window, document);
