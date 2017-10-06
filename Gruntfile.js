@@ -5,7 +5,7 @@ module.exports = function(grunt) {
         pkg: grunt.file.readJSON('package.json'),
         banner:
 `/*!
-  * Stickyfill – \`position: sticky\` polyfill
+  * Stickyfill - \`position: sticky\` polyfill
   * v. <%= pkg.version %> | <%= pkg.homepage %>
   * MIT License
   */
