@@ -114,6 +114,7 @@ class Sticky {
     }
 
     refresh () {
+        console.log('refresh');
         if (seppuku || this._removed) return;
         if (this._active) this._deactivate();
 
@@ -183,20 +184,16 @@ class Sticky {
                 nodeTopValue - parseNumeric(nodeComputedStyle.marginBottom)
         };
 
+
+        debugger;
         /*
-         * 3. Ensure that the node will be positioned relatively to the parent node
+         * 4. Recalc node position.
+         *    It’s important to do this before clone injection to avoid scrolling in Chrome.
          */
-        const parentPosition = parentComputedStyle.position;
-
-        if (
-            parentPosition != 'absolute' &&
-            parentPosition != 'relative'
-        ) {
-            parentNode.style.position = 'relative';
-        }
+        //this._recalcPosition();
 
         /*
-         * 4. Create a clone
+         * 5. Create a clone
          */
         const clone = this._clone = {};
 
@@ -217,22 +214,32 @@ class Sticky {
             position: 'static'
         });
 
-        referenceNode.insertBefore(clone.node, node);
+        referenceNode.insertBefore(clone.node, node.nextSibling || node);
         clone.docOffsetTop = getDocOffsetTop(clone.node);
-
+        debugger;
         /*
-         * 5. Add scroll handler
+         * 3. Ensure that the node will be positioned relatively to the parent node
+         */
+        const parentPosition = parentComputedStyle.position;
+
+        if (
+            parentPosition != 'absolute' &&
+            parentPosition != 'relative'
+        ) {
+            parentNode.style.position = 'relative';
+        }
+
+        this._recalcPosition();
+        debugger;
+        /*
+         * 6. Add scroll handler
          */
         if (!stickies.some(sticky => sticky !== this && sticky._overflowContext === overflowContext)) {
             overflowContext.addEventListener('scroll', scrollHandler);
         }
-
-
-        this._recalcPosition();
     }
 
     _checkScroll () {
-        console.log('_checkScroll');
         if (!this._active || this._removed) return;
 
         const overflowContext = this._overflowContext;
@@ -258,7 +265,6 @@ class Sticky {
     }
 
     _recalcPosition () {
-        console.log('_recalcPosition');
         if (!this._active || this._removed) return;
 
         const stickyMode = this._scroll.top <= this._limits.start? 'start': this._scroll.top >= this._limits.end? 'end': 'middle';
@@ -526,19 +532,19 @@ function init () {
         visibilityChangeEventName = 'webkitvisibilitychange';
     }
 
-    if (visibilityChangeEventName) {
-        if (!document[docHiddenKey]) startFastCheckTimer();
+    // if (visibilityChangeEventName) {
+    //     if (!document[docHiddenKey]) startFastCheckTimer();
 
-        document.addEventListener(visibilityChangeEventName, () => {
-            if (document[docHiddenKey]) {
-                stopFastCheckTimer();
-            }
-            else {
-                startFastCheckTimer();
-            }
-        });
-    }
-    else startFastCheckTimer();
+    //     document.addEventListener(visibilityChangeEventName, () => {
+    //         if (document[docHiddenKey]) {
+    //             stopFastCheckTimer();
+    //         }
+    //         else {
+    //             startFastCheckTimer();
+    //         }
+    //     });
+    // }
+    // else startFastCheckTimer();
 }
 
 if (!seppuku) init();
