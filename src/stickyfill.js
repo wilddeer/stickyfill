@@ -11,18 +11,18 @@ let seppuku = false;
 if (!window.getComputedStyle) seppuku = true;
 // Dont’t get in a way if the browser supports `position: sticky` natively.
 else {
-    const testNode = document.createElement('div');
+    // const testNode = document.createElement('div');
 
-    if (
-        ['', '-webkit-', '-moz-', '-ms-'].some(prefix => {
-            try {
-                testNode.style.position = prefix + 'sticky';
-            }
-            catch(e) {}
+    // if (
+    //     ['', '-webkit-', '-moz-', '-ms-'].some(prefix => {
+    //         try {
+    //             testNode.style.position = prefix + 'sticky';
+    //         }
+    //         catch(e) {}
 
-            return testNode.style.position != '';
-        })
-    ) seppuku = true;
+    //         return testNode.style.position != '';
+    //     })
+    // ) seppuku = true;
 }
 
 
@@ -34,10 +34,10 @@ else {
 const shadowRootExists = typeof ShadowRoot !== 'undefined';
 
 // Last saved scroll position
-const scroll = {
-    top: null,
-    left: null
-};
+// const scroll = {
+//     top: null,
+//     left: null
+// };
 
 // Array of created Sticky instances
 const stickies = [];
@@ -69,6 +69,29 @@ function getDocOffsetTop (node) {
     return docOffsetTop;
 }
 
+function getNodeOverflowContext (node) {
+    let overflowContext = node.parentNode;
+
+    while (true) {
+        if (overflowContext === document.documentElement)
+            return window;
+
+        const style = getComputedStyle(overflowContext);
+
+        if (style.overflow !== 'visible')
+            return overflowContext;
+
+        overflowContext = overflowContext.parentNode;
+    }
+}
+
+function scrollHandler (event) {
+    stickies.forEach(sticky => {
+        if (sticky._overflowContext === event.currentTarget)
+            sticky._checkScroll();
+    });
+}
+
 
 /*
  * 4. Sticky class
@@ -80,6 +103,7 @@ class Sticky {
         if (stickies.some(sticky => sticky._node === node))
             throw new Error('Stickyfill is already applied to this node');
 
+        this._checkScroll = this._checkScroll.bind(this);
         this._node = node;
         this._stickyMode = null;
         this._active = false;
@@ -111,12 +135,18 @@ class Sticky {
         /*
          * 2. Get necessary node parameters
          */
+        const overflowContext = getNodeOverflowContext(node);
         const referenceNode = node.parentNode;
         const parentNode = shadowRootExists && referenceNode instanceof ShadowRoot? referenceNode.host: referenceNode;
         const nodeWinOffset = node.getBoundingClientRect();
         const parentWinOffset = parentNode.getBoundingClientRect();
         const parentComputedStyle = getComputedStyle(parentNode);
 
+        this._overflowContext = overflowContext;
+        this._scroll = {
+            top: overflowContext.scrollTop || overflowContext.pageYOffset,
+            left: overflowContext.scrollLeft || overflowContext.pageXOffset
+        };
         this._parent = {
             node: parentNode,
             styles: {
@@ -190,13 +220,48 @@ class Sticky {
         referenceNode.insertBefore(clone.node, node);
         clone.docOffsetTop = getDocOffsetTop(clone.node);
 
+        /*
+         * 5. Add scroll handler
+         */
+        if (!stickies.some(sticky => sticky !== this && sticky._overflowContext === overflowContext)) {
+            overflowContext.addEventListener('scroll', scrollHandler);
+        }
+
+
         this._recalcPosition();
     }
 
-    _recalcPosition () {
+    _checkScroll () {
+        console.log('_checkScroll');
         if (!this._active || this._removed) return;
 
-        const stickyMode = scroll.top <= this._limits.start? 'start': scroll.top >= this._limits.end? 'end': 'middle';
+        const overflowContext = this._overflowContext;
+        const scrollTop = overflowContext.scrollTop || overflowContext.pageYOffset;
+        const scrollLeft = overflowContext.scrollLeft || overflowContext.pageXOffset;
+
+        if (scrollLeft != this._scroll.left) {
+            this._scroll = {
+                top: overflowContext.scrollTop || overflowContext.pageYOffset,
+                left: overflowContext.scrollLeft || overflowContext.pageXOffset
+            };
+
+            this.refresh();
+        }
+        else if (scrollTop != this._scroll.top) {
+            this._scroll = {
+                top: overflowContext.scrollTop || overflowContext.pageYOffset,
+                left: overflowContext.scrollLeft || overflowContext.pageXOffset
+            };
+
+            this._recalcPosition();
+        }
+    }
+
+    _recalcPosition () {
+        console.log('_recalcPosition');
+        if (!this._active || this._removed) return;
+
+        const stickyMode = this._scroll.top <= this._limits.start? 'start': this._scroll.top >= this._limits.end? 'end': 'middle';
 
         if (this._stickyMode == stickyMode) return;
 
@@ -274,9 +339,15 @@ class Sticky {
         this._stickyMode = null;
         this._active = false;
 
+        delete this._scroll;
         delete this._offsetToWindow;
         delete this._offsetToParent;
         delete this._limits;
+
+        if (!stickies.some(sticky => sticky !== this && sticky._overflowContext === this._overflowContext)) {
+            this._overflowContext.removeEventListener('scroll', scrollHandler);
+        }
+        delete this._overflowContext;
     }
 
     remove () {
@@ -407,24 +478,24 @@ const Stickyfill = {
  */
 function init () {
     // Watch for scroll position changes and trigger recalc/refresh if needed
-    function checkScroll () {
-        if (window.pageXOffset != scroll.left) {
-            scroll.top = window.pageYOffset;
-            scroll.left = window.pageXOffset;
+    // function checkScroll () {
+    //     if (window.pageXOffset != scroll.left) {
+    //         scroll.top = window.pageYOffset;
+    //         scroll.left = window.pageXOffset;
 
-            Stickyfill.refreshAll();
-        }
-        else if (window.pageYOffset != scroll.top) {
-            scroll.top = window.pageYOffset;
-            scroll.left = window.pageXOffset;
+    //         Stickyfill.refreshAll();
+    //     }
+    //     else if (window.pageYOffset != scroll.top) {
+    //         scroll.top = window.pageYOffset;
+    //         scroll.left = window.pageXOffset;
 
-            // recalc position for all stickies
-            stickies.forEach(sticky => sticky._recalcPosition());
-        }
-    }
+    //         // recalc position for all stickies
+    //         stickies.forEach(sticky => sticky._recalcPosition());
+    //     }
+    // }
 
-    checkScroll();
-    window.addEventListener('scroll', checkScroll);
+    // checkScroll();
+    // window.addEventListener('scroll', checkScroll);
 
     // Watch for window resizes and device orientation cahnges and trigger refresh
     window.addEventListener('resize', Stickyfill.refreshAll);
