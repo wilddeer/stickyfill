@@ -11,18 +11,18 @@ let seppuku = false;
 if (!window.getComputedStyle) seppuku = true;
 // Dont’t get in a way if the browser supports `position: sticky` natively.
 else {
-    const testNode = document.createElement('div');
+    // const testNode = document.createElement('div');
 
-    if (
-        ['', '-webkit-', '-moz-', '-ms-'].some(prefix => {
-            try {
-                testNode.style.position = prefix + 'sticky';
-            }
-            catch(e) {}
+    // if (
+    //     ['', '-webkit-', '-moz-', '-ms-'].some(prefix => {
+    //         try {
+    //             testNode.style.position = prefix + 'sticky';
+    //         }
+    //         catch(e) {}
 
-            return testNode.style.position != '';
-        })
-    ) seppuku = true;
+    //         return testNode.style.position != '';
+    //     })
+    // ) seppuku = true;
 }
 
 
@@ -106,7 +106,12 @@ class Sticky {
             marginBottom: nodeComputedStyle.marginBottom,
             marginLeft: nodeComputedStyle.marginLeft,
             marginRight: nodeComputedStyle.marginRight,
-            cssFloat: nodeComputedStyle.cssFloat
+            cssFloat: nodeComputedStyle.cssFloat,
+            flexShrink: nodeComputedStyle.flexShrink,
+            flexGrow: nodeComputedStyle.flexGrow,
+            flexBasis: nodeComputedStyle.flexBasis,
+            order: nodeComputedStyle.order,
+            alignSelf: nodeComputedStyle.alignSelf
         };
 
         /*
@@ -198,12 +203,30 @@ class Sticky {
             marginLeft: nodeComputedProps.marginLeft,
             marginRight: nodeComputedProps.marginRight,
             cssFloat: nodeComputedProps.cssFloat,
+            flexShrink: nodeComputedProps.flexShrink,
+            flexGrow: nodeComputedProps.flexGrow,
+            flexBasis: nodeComputedProps.flexBasis,
+            order: nodeComputedProps.order,
+            alignSelf: nodeComputedProps.alignSelf,
             padding: 0,
             border: 0,
             borderSpacing: 0,
             fontSize: '1em',
             position: 'static'
         });
+
+        const cloneInnerNode = document.createElement('div');
+
+        extend(cloneInnerNode.style, {
+            width: nodeWinOffset.right - nodeWinOffset.left + 'px',
+            height: nodeWinOffset.bottom - nodeWinOffset.top + 'px',
+            margin: 0,
+            padding: 0,
+            border: 0,
+            position: 'static'
+        });
+
+        clone.node.appendChild(cloneInnerNode);
 
         referenceNode.insertBefore(clone.node, node);
         clone.docOffsetTop = getDocOffsetTop(clone.node);
@@ -471,19 +494,19 @@ function init () {
         visibilityChangeEventName = 'webkitvisibilitychange';
     }
 
-    if (visibilityChangeEventName) {
-        if (!document[docHiddenKey]) startFastCheckTimer();
+    // if (visibilityChangeEventName) {
+    //     if (!document[docHiddenKey]) startFastCheckTimer();
 
-        document.addEventListener(visibilityChangeEventName, () => {
-            if (document[docHiddenKey]) {
-                stopFastCheckTimer();
-            }
-            else {
-                startFastCheckTimer();
-            }
-        });
-    }
-    else startFastCheckTimer();
+    //     document.addEventListener(visibilityChangeEventName, () => {
+    //         if (document[docHiddenKey]) {
+    //             stopFastCheckTimer();
+    //         }
+    //         else {
+    //             startFastCheckTimer();
+    //         }
+    //     });
+    // }
+    // else startFastCheckTimer();
 }
 
 if (!seppuku) init();
