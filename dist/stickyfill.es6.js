@@ -1,6 +1,6 @@
 /*!
   * Stickyfill – `position: sticky` polyfill
-  * v. 2.0.2 | https://github.com/wilddeer/stickyfill
+  * v. 2.0.3 | https://github.com/wilddeer/stickyfill
   * MIT License
   */
 
@@ -102,20 +102,32 @@ class Sticky {
         const node = this._node;
 
         /*
-         * 1. Check if the node can be activated
+         * 1. Save node computed props
          */
         const nodeComputedStyle = getComputedStyle(node);
+        const nodeComputedProps = {
+            top: nodeComputedStyle.top,
+            display: nodeComputedStyle.display,
+            marginTop: nodeComputedStyle.marginTop,
+            marginBottom: nodeComputedStyle.marginBottom,
+            marginLeft: nodeComputedStyle.marginLeft,
+            marginRight: nodeComputedStyle.marginRight,
+            cssFloat: nodeComputedStyle.cssFloat
+        };
 
+        /*
+         * 2. Check if the node can be activated
+         */
         if (
-            isNaN(parseFloat(nodeComputedStyle.top)) ||
-            nodeComputedStyle.display == 'table-cell' ||
-            nodeComputedStyle.display == 'none'
+            isNaN(parseFloat(nodeComputedProps.top)) ||
+            nodeComputedProps.display == 'table-cell' ||
+            nodeComputedProps.display == 'none'
         ) return;
 
         this._active = true;
 
         /*
-         * 2. Get necessary node parameters
+         * 3. Get necessary node parameters
          */
         const referenceNode = node.parentNode;
         const parentNode = shadowRootExists && referenceNode instanceof ShadowRoot? referenceNode.host: referenceNode;
@@ -151,16 +163,16 @@ class Sticky {
             marginRight: node.style.marginRight
         };
 
-        const nodeTopValue = parseNumeric(nodeComputedStyle.top);
+        const nodeTopValue = parseNumeric(nodeComputedProps.top);
         this._limits = {
             start: nodeWinOffset.top + window.pageYOffset - nodeTopValue,
             end: parentWinOffset.top + window.pageYOffset + parentNode.offsetHeight -
                 parseNumeric(parentComputedStyle.borderBottomWidth) - node.offsetHeight -
-                nodeTopValue - parseNumeric(nodeComputedStyle.marginBottom)
+                nodeTopValue - parseNumeric(nodeComputedProps.marginBottom)
         };
 
         /*
-         * 3. Ensure that the node will be positioned relatively to the parent node
+         * 4. Ensure that the node will be positioned relatively to the parent node
          */
         const parentPosition = parentComputedStyle.position;
 
@@ -172,20 +184,26 @@ class Sticky {
         }
 
         /*
-         * 4. Create a clone
+         * 5. Recalc node position.
+         *    It’s important to do this before clone injection to avoid scrolling bug in Chrome.
+         */
+        this._recalcPosition();
+
+        /*
+         * 6. Create a clone
          */
         const clone = this._clone = {};
-
         clone.node = document.createElement('div');
+
         // Apply styles to the clone
         extend(clone.node.style, {
             width: nodeWinOffset.right - nodeWinOffset.left + 'px',
             height: nodeWinOffset.bottom - nodeWinOffset.top + 'px',
-            marginTop: nodeComputedStyle.marginTop,
-            marginBottom: nodeComputedStyle.marginBottom,
-            marginLeft: nodeComputedStyle.marginLeft,
-            marginRight: nodeComputedStyle.marginRight,
-            cssFloat: nodeComputedStyle.cssFloat,
+            marginTop: nodeComputedProps.marginTop,
+            marginBottom: nodeComputedProps.marginBottom,
+            marginLeft: nodeComputedProps.marginLeft,
+            marginRight: nodeComputedProps.marginRight,
+            cssFloat: nodeComputedProps.cssFloat,
             padding: 0,
             border: 0,
             borderSpacing: 0,
@@ -195,8 +213,6 @@ class Sticky {
 
         referenceNode.insertBefore(clone.node, node);
         clone.docOffsetTop = getDocOffsetTop(clone.node);
-
-        this._recalcPosition();
     }
 
     _recalcPosition () {
