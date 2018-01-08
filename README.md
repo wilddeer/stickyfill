@@ -15,7 +15,7 @@ Check out [the demo](http://wd.dizaina.net/en/scripts/stickyfill/) and [use case
     - behaves nicely with horizontal page scrolling,
     - only works on elements with specified `top`,
     - mimics native `top` and `margin-bottom` behavior,
-    - ~~works with table cells~~ removed for consistancy until Firefox [makes a native implementation](https://bugzilla.mozilla.org/show_bug.cgi?id=975644)
+    - ~~works with table cells~~ removed for consistency until Firefox [makes a native implementation](https://bugzilla.mozilla.org/show_bug.cgi?id=975644)
 
 ## What it doesn't
 
