@@ -17,6 +17,7 @@
     "url": "https://github.com/wilddeer"
   },
   "main": "dist/stickyfill.js",
+  "types": "types/index.d.ts",
   "devDependencies": {
     "babel-preset-es2015": "^6.22.0",
     "grunt": "^1.0.1",
