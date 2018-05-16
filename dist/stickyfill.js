@@ -1,6 +1,6 @@
 /*!
   * Stickyfill – `position: sticky` polyfill
-  * v. 2.0.3 | https://github.com/wilddeer/stickyfill
+  * v. 2.0.4 | https://github.com/wilddeer/stickyfill
   * MIT License
   */
 
@@ -23,17 +23,15 @@
     if (!window.getComputedStyle) seppuku = true;
     // Dont’t get in a way if the browser supports `position: sticky` natively.
     else {
-            (function () {
-                var testNode = document.createElement('div');
+            var testNode = document.createElement('div');
     
-                if (['', '-webkit-', '-moz-', '-ms-'].some(function (prefix) {
-                    try {
-                        testNode.style.position = prefix + 'sticky';
-                    } catch (e) {}
+            if (['', '-webkit-', '-moz-', '-ms-'].some(function (prefix) {
+                try {
+                    testNode.style.position = prefix + 'sticky';
+                } catch (e) {}
     
-                    return testNode.style.position != '';
-                })) seppuku = true;
-            })();
+                return testNode.style.position != '';
+            })) seppuku = true;
         }
     
     /*
@@ -382,9 +380,9 @@
             };
     
             for (var i = 0; i < nodeList.length; i++) {
-                var _ret2 = _loop(i);
+                var _ret = _loop(i);
     
-                if (_ret2 === 'continue') continue;
+                if (_ret === 'continue') continue;
             }
     
             return addedStickies;
@@ -465,7 +463,7 @@
         checkScroll();
         window.addEventListener('scroll', checkScroll);
     
-        // Watch for window resizes and device orientation cahnges and trigger refresh
+        // Watch for window resizes and device orientation changes and trigger refresh
         window.addEventListener('resize', Stickyfill.refreshAll);
         window.addEventListener('orientationchange', Stickyfill.refreshAll);
     

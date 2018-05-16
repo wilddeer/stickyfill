@@ -1,6 +1,6 @@
 /*!
   * Stickyfill – `position: sticky` polyfill
-  * v. 2.0.3 | https://github.com/wilddeer/stickyfill
+  * v. 2.0.4 | https://github.com/wilddeer/stickyfill
   * MIT License
   */
 
@@ -448,7 +448,7 @@ function init () {
     checkScroll();
     window.addEventListener('scroll', checkScroll);
 
-    // Watch for window resizes and device orientation cahnges and trigger refresh
+    // Watch for window resizes and device orientation changes and trigger refresh
     window.addEventListener('resize', Stickyfill.refreshAll);
     window.addEventListener('orientationchange', Stickyfill.refreshAll);
 
