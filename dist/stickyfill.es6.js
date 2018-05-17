@@ -1,6 +1,6 @@
 /*!
   * Stickyfill – `position: sticky` polyfill
-  * v. 2.0.4 | https://github.com/wilddeer/stickyfill
+  * v. 2.0.5 | https://github.com/wilddeer/stickyfill
   * MIT License
   */
 
