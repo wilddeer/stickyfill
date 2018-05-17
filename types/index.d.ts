@@ -10,8 +10,8 @@ export function add(elements: SingleOrMany<HTMLElement>): Sticky[]
 
 export function refreshAll(): void
 
-export function removeOne(element: SingleOrMany<HTMLElement>)
-export function remove(elements: SingleOrMany<HTMLElement>)
-export function removeAll()
+export function removeOne(element: SingleOrMany<HTMLElement>): void
+export function remove(elements: SingleOrMany<HTMLElement>): void
+export function removeAll(): void
 
 export const stickies: Sticky[]
