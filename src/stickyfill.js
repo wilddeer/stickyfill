@@ -7,8 +7,11 @@
  */
 let seppuku = false;
 
+// Check for existence of window in case this is being imported on the server in an SSR app
+const isWindowDefined = typeof window !== 'undefined';
+
 // The polyfill cant’t function properly without `getComputedStyle`.
-if (!window.getComputedStyle) seppuku = true;
+if (isWindowDefined && !window.getComputedStyle) seppuku = true;
 // Dont’t get in a way if the browser supports `position: sticky` natively.
 else {
     const testNode = document.createElement('div');
@@ -317,6 +320,12 @@ const Stickyfill = {
     stickies,
     Sticky,
 
+    forceSticky () {
+        seppuku = false;
+        init();
+        this.refreshAll();
+    },
+
     addOne (node) {
         // Check whether it’s a node
         if (!(node instanceof HTMLElement)) {
@@ -486,7 +495,7 @@ function init () {
     else startFastCheckTimer();
 }
 
-if (!seppuku) init();
+if (isWindowDefined && !seppuku) init();
 
 
 /*
@@ -495,6 +504,6 @@ if (!seppuku) init();
 if (typeof module != 'undefined' && module.exports) {
     module.exports = Stickyfill;
 }
-else {
+else if (isWindowDefined) {
     window.Stickyfill = Stickyfill;
 }
