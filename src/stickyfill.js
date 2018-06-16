@@ -6,6 +6,7 @@
  *    of the polyfill, but the API will remain functional to avoid breaking things.
  */
 let seppuku = false;
+let isInitialized = false;
 
 // Check for existence of window in case this is being imported on the server in an SSR app
 const isWindowDefined = typeof window !== 'undefined';
@@ -322,7 +323,11 @@ const Stickyfill = {
 
     forceSticky () {
         seppuku = false;
-        init();
+
+        if (!isInitialized) {
+            init();
+        }
+
         this.refreshAll();
     },
 
@@ -431,6 +436,8 @@ const Stickyfill = {
  * 6. Setup events (unless the polyfill was disabled)
  */
 function init () {
+    isInitialized = true;
+
     // Watch for scroll position changes and trigger recalc/refresh if needed
     function checkScroll () {
         if (window.pageXOffset != scroll.left) {
