@@ -74,13 +74,14 @@ function getDocOffsetTop (node) {
  * 4. Sticky class
  */
 class Sticky {
-    constructor (node) {
+    constructor (node, elementName) {
         if (!(node instanceof HTMLElement))
             throw new Error('First argument must be HTMLElement');
         if (stickies.some(sticky => sticky._node === node))
             throw new Error('Stickyfill is already applied to this node');
 
         this._node = node;
+        this._elementName = elementName;
         this._stickyMode = null;
         this._active = false;
 
@@ -187,7 +188,7 @@ class Sticky {
          * 6. Create a clone
          */
         const clone = this._clone = {};
-        clone.node = document.createElement('div');
+        clone.node = document.createElement(this._elementName);
 
         // Apply styles to the clone
         extend(clone.node.style, {
@@ -309,6 +310,7 @@ class Sticky {
     }
 }
 
+const defElementName = 'div'
 
 /*
  * 5. Stickyfill API
@@ -317,7 +319,7 @@ const Stickyfill = {
     stickies,
     Sticky,
 
-    addOne (node) {
+    addOne (node, elementName = defElementName) {
         // Check whether it’s a node
         if (!(node instanceof HTMLElement)) {
             // Maybe it’s a node list of some sort?
@@ -333,10 +335,10 @@ const Stickyfill = {
         }
 
         // Create and return new sticky
-        return new Sticky(node);
+        return new Sticky(node, elementName);
     },
 
-    add (nodeList) {
+    add (nodeList, elementName = defElementName) {
         // If it’s a node make an array of one node
         if (nodeList instanceof HTMLElement) nodeList = [nodeList];
         // Check if the argument is an iterable of some sort
@@ -365,7 +367,7 @@ const Stickyfill = {
             })) continue;
 
             // Create and add new sticky
-            addedStickies.push(new Sticky(node));
+            addedStickies.push(new Sticky(node, elementName));
         }
 
         return addedStickies;
