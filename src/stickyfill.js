@@ -7,8 +7,10 @@
  */
 let seppuku = false;
 
+const isWindowDefined = typeof window !== 'undefined';
+
 // The polyfill can’t function properly without `window` or `window.getComputedStyle`.
-if (typeof window === 'undefined' || !window.getComputedStyle) seppuku = true;
+if (!isWindowDefined || !window.getComputedStyle) seppuku = true;
 // Dont’t get in a way if the browser supports `position: sticky` natively.
 else {
     const testNode = document.createElement('div');
@@ -509,6 +511,6 @@ if (!seppuku) init();
 if (typeof module != 'undefined' && module.exports) {
     module.exports = Stickyfill;
 }
-else {
-    this.Stickyfill = Stickyfill;
+else if (isWindowDefined) {
+    window.Stickyfill = Stickyfill;
 }
