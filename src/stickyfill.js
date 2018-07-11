@@ -6,13 +6,9 @@
  *    of the polyfill, but the API will remain functional to avoid breaking things.
  */
 let seppuku = false;
-let isInitialized = false;
 
-// Check for existence of window in case this is being imported on the server in an SSR app
-const isWindowDefined = typeof window !== 'undefined';
-
-// The polyfill cant’t function properly without `getComputedStyle`.
-if (isWindowDefined && !window.getComputedStyle) seppuku = true;
+// The polyfill can’t function properly without `window` or `window.getComputedStyle`.
+if (typeof window === 'undefined' || !window.getComputedStyle) seppuku = true;
 // Dont’t get in a way if the browser supports `position: sticky` natively.
 else {
     const testNode = document.createElement('div');
@@ -33,6 +29,7 @@ else {
 /*
  * 2. “Global” vars used across the polyfill
  */
+let isInitialized = false;
 
 // Check if Shadow Root constructor exists to make further checks simpler
 const shadowRootExists = typeof ShadowRoot !== 'undefined';
@@ -323,10 +320,7 @@ const Stickyfill = {
 
     forceSticky () {
         seppuku = false;
-
-        if (!isInitialized) {
-            init();
-        }
+        init();
 
         this.refreshAll();
     },
@@ -436,6 +430,10 @@ const Stickyfill = {
  * 6. Setup events (unless the polyfill was disabled)
  */
 function init () {
+    if (isInitialized) {
+        return;
+    }
+
     isInitialized = true;
 
     // Watch for scroll position changes and trigger recalc/refresh if needed
@@ -502,7 +500,7 @@ function init () {
     else startFastCheckTimer();
 }
 
-if (isWindowDefined && !seppuku) init();
+if (!seppuku) init();
 
 
 /*
@@ -511,6 +509,6 @@ if (isWindowDefined && !seppuku) init();
 if (typeof module != 'undefined' && module.exports) {
     module.exports = Stickyfill;
 }
-else if (isWindowDefined) {
-    window.Stickyfill = Stickyfill;
+else {
+    this.Stickyfill = Stickyfill;
 }
