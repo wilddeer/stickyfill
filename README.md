@@ -149,6 +149,10 @@ Removes stickies associated with the elements in the list.
 
 Removes all existing stickies.
 
+#### `Stickyfill.forceSticky()`
+
+Force-enable the polyfill, even if the browser supports `position: sticky` natively.
+
 #### `Stickyfill.stickies`
 
 Array of existing [Sticky](#Stickyfill.Sticky) instances.
