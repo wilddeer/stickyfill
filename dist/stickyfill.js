@@ -1,6 +1,6 @@
 /*!
   * Stickyfill – `position: sticky` polyfill
-  * v. 2.0.5 | https://github.com/wilddeer/stickyfill
+  * v. 2.1.0 | https://github.com/wilddeer/stickyfill
   * MIT License
   */
 
@@ -19,24 +19,29 @@
     
     var seppuku = false;
     
-    // The polyfill cant’t function properly without `getComputedStyle`.
-    if (!window.getComputedStyle) seppuku = true;
+    var isWindowDefined = typeof window !== 'undefined';
+    
+    // The polyfill can’t function properly without `window` or `window.getComputedStyle`.
+    if (!isWindowDefined || !window.getComputedStyle) seppuku = true;
     // Dont’t get in a way if the browser supports `position: sticky` natively.
     else {
-            var testNode = document.createElement('div');
+            (function () {
+                var testNode = document.createElement('div');
     
-            if (['', '-webkit-', '-moz-', '-ms-'].some(function (prefix) {
-                try {
-                    testNode.style.position = prefix + 'sticky';
-                } catch (e) {}
+                if (['', '-webkit-', '-moz-', '-ms-'].some(function (prefix) {
+                    try {
+                        testNode.style.position = prefix + 'sticky';
+                    } catch (e) {}
     
-                return testNode.style.position != '';
-            })) seppuku = true;
+                    return testNode.style.position != '';
+                })) seppuku = true;
+            })();
         }
     
     /*
      * 2. “Global” vars used across the polyfill
      */
+    var isInitialized = false;
     
     // Check if Shadow Root constructor exists to make further checks simpler
     var shadowRootExists = typeof ShadowRoot !== 'undefined';
@@ -111,6 +116,7 @@
                  */
                 var nodeComputedStyle = getComputedStyle(node);
                 var nodeComputedProps = {
+                    position: nodeComputedStyle.position,
                     top: nodeComputedStyle.top,
                     display: nodeComputedStyle.display,
                     marginTop: nodeComputedStyle.marginTop,
@@ -128,7 +134,15 @@
                 this._active = true;
     
                 /*
-                 * 3. Get necessary node parameters
+                 * 3. Check if the current node position is `sticky`. If it is, it means that the browser supports sticky positioning,
+                 *    but the polyfill was force-enabled. We set the node’s position to `static` before continuing, so that the node
+                 *    is in it’s initial position when we gather its params.
+                 */
+                var originalPosition = node.style.position;
+                if (nodeComputedStyle.position == 'sticky' || nodeComputedStyle.position == '-webkit-sticky') node.style.position = 'static';
+    
+                /*
+                 * 4. Get necessary node parameters
                  */
                 var referenceNode = node.parentNode;
                 var parentNode = shadowRootExists && referenceNode instanceof ShadowRoot ? referenceNode.host : referenceNode;
@@ -153,7 +167,7 @@
                     right: -nodeWinOffset.right + parentWinOffset.right - parseNumeric(parentComputedStyle.borderRightWidth)
                 };
                 this._styles = {
-                    position: node.style.position,
+                    position: originalPosition,
                     top: node.style.top,
                     bottom: node.style.bottom,
                     left: node.style.left,
@@ -171,7 +185,7 @@
                 };
     
                 /*
-                 * 4. Ensure that the node will be positioned relatively to the parent node
+                 * 5. Ensure that the node will be positioned relatively to the parent node
                  */
                 var parentPosition = parentComputedStyle.position;
     
@@ -180,13 +194,13 @@
                 }
     
                 /*
-                 * 5. Recalc node position.
+                 * 6. Recalc node position.
                  *    It’s important to do this before clone injection to avoid scrolling bug in Chrome.
                  */
                 this._recalcPosition();
     
                 /*
-                 * 6. Create a clone
+                 * 7. Create a clone
                  */
                 var clone = this._clone = {};
                 clone.node = document.createElement('div');
@@ -330,6 +344,12 @@
         stickies: stickies,
         Sticky: Sticky,
     
+        forceSticky: function forceSticky() {
+            seppuku = false;
+            init();
+    
+            this.refreshAll();
+        },
         addOne: function addOne(node) {
             // Check whether it’s a node
             if (!(node instanceof HTMLElement)) {
@@ -380,9 +400,9 @@
             };
     
             for (var i = 0; i < nodeList.length; i++) {
-                var _ret = _loop(i);
+                var _ret2 = _loop(i);
     
-                if (_ret === 'continue') continue;
+                if (_ret2 === 'continue') continue;
             }
     
             return addedStickies;
@@ -442,6 +462,12 @@
      * 6. Setup events (unless the polyfill was disabled)
      */
     function init() {
+        if (isInitialized) {
+            return;
+        }
+    
+        isInitialized = true;
+    
         // Watch for scroll position changes and trigger recalc/refresh if needed
         function checkScroll() {
             if (window.pageXOffset != scroll.left) {
@@ -513,7 +539,7 @@
      */
     if (typeof module != 'undefined' && module.exports) {
         module.exports = Stickyfill;
-    } else {
+    } else if (isWindowDefined) {
         window.Stickyfill = Stickyfill;
     }
     
