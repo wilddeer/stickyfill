@@ -103,6 +103,7 @@ class Sticky {
          */
         const nodeComputedStyle = getComputedStyle(node);
         const nodeComputedProps = {
+            position: nodeComputedStyle.position,
             top: nodeComputedStyle.top,
             display: nodeComputedStyle.display,
             marginTop: nodeComputedStyle.marginTop,
@@ -124,7 +125,16 @@ class Sticky {
         this._active = true;
 
         /*
-         * 3. Get necessary node parameters
+         * 3. Check if the current node position is `sticky`. If it is, it means that the browser supports sticky positioning,
+         *    but the polyfill was force-enabled. We set the node’s position to `static` before continuing, so that the node
+         *    is in it’s initial position when we gather its params.
+         */
+        const originalPosition = node.style.position;
+        if (nodeComputedStyle.position == 'sticky' || nodeComputedStyle.position == '-webkit-sticky')
+            node.style.position = 'static';
+
+        /*
+         * 4. Get necessary node parameters
          */
         const referenceNode = node.parentNode;
         const parentNode = shadowRootExists && referenceNode instanceof ShadowRoot? referenceNode.host: referenceNode;
@@ -149,7 +159,7 @@ class Sticky {
             right: -nodeWinOffset.right + parentWinOffset.right - parseNumeric(parentComputedStyle.borderRightWidth)
         };
         this._styles = {
-            position: node.style.position,
+            position: originalPosition,
             top: node.style.top,
             bottom: node.style.bottom,
             left: node.style.left,
@@ -169,7 +179,7 @@ class Sticky {
         };
 
         /*
-         * 4. Ensure that the node will be positioned relatively to the parent node
+         * 5. Ensure that the node will be positioned relatively to the parent node
          */
         const parentPosition = parentComputedStyle.position;
 
@@ -181,13 +191,13 @@ class Sticky {
         }
 
         /*
-         * 5. Recalc node position.
+         * 6. Recalc node position.
          *    It’s important to do this before clone injection to avoid scrolling bug in Chrome.
          */
         this._recalcPosition();
 
         /*
-         * 6. Create a clone
+         * 7. Create a clone
          */
         const clone = this._clone = {};
         clone.node = document.createElement('div');
