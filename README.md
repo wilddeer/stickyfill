@@ -23,6 +23,21 @@ Check out [the demo](http://wd.dizaina.net/en/scripts/stickyfill/) and [use case
 - doesn't work in overflowed blocks,
 - doesn't parse your CSS! Launch it manually.
 
+----
+
+<p align="center">
+    <a href="#installation">Installation</a>&nbsp;&nbsp;
+    <a href="#usage">Usage</a>&nbsp;&nbsp;
+    <a href="#pro-tips">Pro tips</a>&nbsp;&nbsp;
+    <a href="#api">API</a>&nbsp;&nbsp;
+    <a href="#feature-requests">Feature requests</a>&nbsp;&nbsp;
+    <a href="#bug-reports">Bug reports</a>&nbsp;&nbsp;
+    <a href="#contributing">Contributing</a>&nbsp;&nbsp;
+    <a href="#using-stickyfill">Buy me a coffee</a>
+</p>
+
+----
+
 ## Installation
 
 ### NPM
@@ -226,7 +241,7 @@ Use [Yarn](https://yarnpkg.com/), dont’t forget to commit `yarn.lock`.
 
 ## Using Stickyfill?
 
-🍻 [Buy me a beer](https://www.paypal.me/wilddeer/0usd)
+[![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/wilddeer)
 
 ## License
 
