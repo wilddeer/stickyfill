@@ -225,7 +225,7 @@ Ok, you are all set.
 
 ### Building and testing
 
-`cd` into the repo folder and run `grunt`. It will build the project from `/src/strickyfill.js` into `/dist` and run the watcher that will rebuild the project every time you change something in the source file.
+`cd` into the repo folder and run `grunt`. It will build the project from `/src/stickyfill.js` into `/dist` and run the watcher that will rebuild the project every time you change something in the source file.
 
 Make changes to the source file. Stick to ES6 syntax.
 
