@@ -33,7 +33,7 @@ Check out [the demo](http://wd.dizaina.net/en/scripts/stickyfill/) and [use case
     <a href="#feature-requests">Feature requests</a>&nbsp;&nbsp;
     <a href="#bug-reports">Bug reports</a>&nbsp;&nbsp;
     <a href="#contributing">Contributing</a>&nbsp;&nbsp;
-    <a href="#using-stickyfill">Buy me a coffee</a>
+    <a href="#using-stickyfill">Buy me a beer</a>
 </p>
 
 ----
@@ -241,7 +241,7 @@ Use [Yarn](https://yarnpkg.com/), dont’t forget to commit `yarn.lock`.
 
 ## Using Stickyfill?
 
-[![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/wilddeer)
+🍻 [Buy me a beer](https://www.paypal.me/wilddeer/3usd)
 
 ## License
 
