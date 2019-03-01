@@ -3,15 +3,15 @@ export interface Sticky {
     remove(): void
 }
 
-type SingleOrMany<T> = T | Iterable<T>
+type SingleOrMany<T> = T | Iterable<T> | NodeListOf<T>
 
-export function addOne(element: SingleOrMany<HTMLElement>): Sticky
-export function add(elements: SingleOrMany<HTMLElement>): Sticky[]
+export function addOne(element: SingleOrMany<Element>): Sticky
+export function add(elements: SingleOrMany<Element>): Sticky[]
 
 export function refreshAll(): void
 
-export function removeOne(element: SingleOrMany<HTMLElement>): void
-export function remove(elements: SingleOrMany<HTMLElement>): void
+export function removeOne(element: SingleOrMany<Element>): void
+export function remove(elements: SingleOrMany<Element>): void
 export function removeAll(): void
 
 export const stickies: Sticky[]
