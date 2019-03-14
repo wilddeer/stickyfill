@@ -449,6 +449,11 @@ function init () {
 
     isInitialized = true;
 
+    const requestAnimationFrame = window.requestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.msRequestAnimationFrame;
+
     // Watch for scroll position changes and trigger recalc/refresh if needed
     function checkScroll () {
         if (window.pageXOffset != scroll.left) {
@@ -464,17 +469,11 @@ function init () {
             // recalc position for all stickies
             stickies.forEach(sticky => sticky._recalcPosition());
         }
+
+        requestAnimationFrame(checkScroll);
     }
 
-    checkScroll();
-
-    const requestAnimationFrame = window.requestAnimationFrame ||
-        window.mozRequestAnimationFrame ||
-        window.webkitRequestAnimationFrame ||
-        window.msRequestAnimationFrame;
-    requestAnimationFrame(() => {
-        checkScroll();
-    });
+    requestAnimationFrame(checkScroll);
 
     // Watch for window resizes and device orientation changes and trigger refresh
     window.addEventListener('resize', Stickyfill.refreshAll);
