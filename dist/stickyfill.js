@@ -487,7 +487,11 @@
         }
     
         checkScroll();
-        window.addEventListener('scroll', checkScroll);
+    
+        var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+        requestAnimationFrame(function () {
+            checkScroll();
+        });
     
         // Watch for window resizes and device orientation changes and trigger refresh
         window.addEventListener('resize', Stickyfill.refreshAll);
