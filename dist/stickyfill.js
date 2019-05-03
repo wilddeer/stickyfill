@@ -468,8 +468,6 @@
     
         isInitialized = true;
     
-        var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
-    
         // Watch for scroll position changes and trigger recalc/refresh if needed
         function checkScroll() {
             if (window.pageXOffset != scroll.left) {
@@ -486,11 +484,10 @@
                     return sticky._recalcPosition();
                 });
             }
-    
-            requestAnimationFrame(checkScroll);
         }
     
-        requestAnimationFrame(checkScroll);
+        checkScroll();
+        window.addEventListener('scroll', checkScroll);
     
         // Watch for window resizes and device orientation changes and trigger refresh
         window.addEventListener('resize', Stickyfill.refreshAll);
