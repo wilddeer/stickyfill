@@ -5,7 +5,8 @@ export interface Sticky {
 
 type SingleOrMany<T> = T | Iterable<T>
 
-export function addOne(element: SingleOrMany<HTMLElement>): Sticky
+export function addOne(element: HTMLElement): Sticky
+export function addOne(element: SingleOrMany<HTMLElement>): Sticky | undefined
 export function add(elements: SingleOrMany<HTMLElement>): Sticky[]
 
 export function refreshAll(): void
