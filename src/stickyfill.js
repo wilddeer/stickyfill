@@ -287,7 +287,9 @@ class Sticky {
     _deactivate () {
         if (!this._active || this._removed) return;
 
-        this._clone.node.parentNode.removeChild(this._clone.node);
+        if (this._clone.node.parentNode) {
+          this._clone.node.parentNode.removeChild(this._clone.node);
+        }
         delete this._clone;
 
         extend(this._node.style, this._styles);
