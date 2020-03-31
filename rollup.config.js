@@ -10,6 +10,6 @@ export default {
   output: {
     file: pkg.main,
     format: 'umd',
-    moduleName: 'Stickyfill'
+    name: 'Stickyfill'
   }
 };
