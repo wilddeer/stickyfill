@@ -2,6 +2,9 @@
   "name": "stickyfilljs",
   "version": "2.1.0",
   "description": "Polyfill for CSS `position: sticky`",
+  "scripts": {
+    "build": "rollup -c rollup.config.js"
+  },
   "keywords": [
     "sticky",
     "polyfill"
@@ -19,14 +22,10 @@
   "main": "dist/stickyfill.js",
   "types": "types/index.d.ts",
   "devDependencies": {
-    "babel-preset-es2015": "^6.22.0",
-    "grunt": "^1.0.1",
-    "grunt-babel": "^6.0.0",
-    "grunt-bump": "^0.8.0",
-    "grunt-contrib-uglify": "^2.0.0",
-    "grunt-contrib-watch": "^1.0.0",
-    "grunt-shell": "^2.1.0",
-    "grunt-wrap": "^0.3.1"
+    "@babel/core": "^7.9.0",
+    "@babel/preset-env": "^7.9.0",
+    "rollup": "^2.2.0",
+    "rollup-plugin-babel": "^4.4.0"
   },
   "dependencies": {}
 }
