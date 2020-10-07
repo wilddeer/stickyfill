@@ -14,4 +14,6 @@ export function removeOne(element: SingleOrMany<HTMLElement>): void
 export function remove(elements: SingleOrMany<HTMLElement>): void
 export function removeAll(): void
 
+export function forceSticky(): void
+
 export const stickies: Sticky[]
