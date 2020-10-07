@@ -1,3 +1,11 @@
+----
+# ⚠ Unmaintained!
+
+Stickyfill did a good job while the browsers were implementing `position: sticky` support. You can now safely use stickies without a polyfill, all modern browsers [support them natively](https://caniuse.com/?search=position%3Asticky).
+
+----
+<br><br>
+
 # Polyfill for CSS `position: sticky`
 
 The most accurate sticky polyfill out in the wild.
