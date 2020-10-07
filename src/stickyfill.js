@@ -27,6 +27,8 @@ else {
     ) seppuku = true;
 }
 
+// Pre-Chromium Edge position: sticky support is bugged but this fixes it (https://stackoverflow.com/questions/52876032/position-sticky-flickers-during-scroll-in-microsoft-edge-but-not-in-other-brow)
+if(window.navigator.userAgent.indexOf("Edge") > -1) seppuku = false;
 
 /*
  * 2. “Global” vars used across the polyfill
